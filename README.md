@@ -10,8 +10,6 @@ This is a full-featured backend API that provides:
 
 - **Stripe Payment Processing** - Complete payment flow with intents, captures, refunds, and webhooks
 - **Stripe Connect** - Marketplace functionality for multi-party transactions
-- **Authentication System** - JWT-based auth with OAuth support (Google, Facebook)
-- **Clean Architecture** - Well-structured, maintainable, and scalable codebase
 
 Perfect for building e-commerce platforms, marketplaces, SaaS applications, or any service that needs payment processing.
 
@@ -151,27 +149,6 @@ Then edit `.env` with your configuration. See the [Configuration](#️-configura
 ## ⚙️ Configuration
 
 The application uses environment variables for configuration. Here's what you need to set up:
-
-### Essential Configuration
-
-**Minimum required variables to get started:**
-
-```env
-# Application
-NODE_ENV=development
-PORT=3000
-
-# Database (or use Docker - see Docker section)
-DATABASE_URL=postgresql://user:password@localhost:5432/stripe_nestjs
-
-# Redis
-REDIS_HOST=localhost
-REDIS_PORT=6379
-
-# Stripe (get these from your Stripe Dashboard)
-STRIPE_SECRET_KEY=sk_test_...
-STRIPE_PUBLISHABLE_KEY=pk_test_...
-```
 
 ### Complete Configuration
 
@@ -382,22 +359,6 @@ npm run build
 # Start in production mode
 npm run start:prod
 ```
-
-### What Happens on Startup?
-
-When the application starts, it will:
-1. ✅ Connect to PostgreSQL database
-2. ✅ Connect to Redis cache
-3. ✅ Load environment variables
-4. ✅ Initialize Stripe SDK
-5. ✅ Start the HTTP server
-6. ✅ Set up Swagger documentation
-
-If you see any connection errors, check that:
-- PostgreSQL is running (or Docker containers are up)
-- Redis is running
-- Environment variables are correctly set
-
 ---
 
 ## 📚 API Documentation
