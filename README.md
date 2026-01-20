@@ -587,36 +587,6 @@ npx prisma generate
 # Open Prisma Studio (database GUI)
 npx prisma studio
 ```
-
-### Code Quality
-
-```bash
-# Run linter
-npm run lint
-
-# Format code
-npm run format
-
-# Run tests
-npm run test
-
-# Run tests in watch mode
-npm run test:watch
-
-# Generate test coverage
-npm run test:cov
-```
-
-### Security
-
-```bash
-# Check for vulnerabilities
-npm run audit
-
-# Fix vulnerabilities (if possible)
-npm run audit:fix
-```
-
 ---
 
 ## 📄 License
