@@ -1,0 +1,31 @@
+# command line up config file
+# (Windows)  docker-compose -f docker-compose-dev.yml up -d
+
+services:
+  Auth-DB:
+    image: postgres:13
+    container_name: ${CONTAINER_NAME}
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    ports:
+      - '${DATABASE_PORT}:5432'
+    env_file:
+      - .env
+
+  redis:
+    image: redis:alpine
+    container_name: ${REDIS_CONTAINER_NAME}
+    ports:
+      - '${REDIS_PORT}:6379'
+    environment:
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    env_file:
+      - .env

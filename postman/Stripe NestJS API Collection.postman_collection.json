@@ -1,0 +1,1570 @@
+{
+  "info": {
+    "_postman_id": "4a19928a-dacb-42e1-8086-770fa117dcf0",
+    "name": "Stripe NestJS API Collection",
+    "description": "Comprehensive Postman collection for Stripe NestJS API with Authentication and Stripe Payment operations.\n\n\u26a0\ufe0f IMPORTANT:\n- Auth endpoints: /{{apiVersion}}/auth/... (requires v1 or v2)\n- Stripe endpoints: /{{apiVersion}}/stripe/... (requires v1 or v2)\n\nVariables:\n- baseUrl: http://localhost:3000\n- apiVersion: v1 (default, can be changed to v2)\n- testEmail: md.tarikulislamjuel@gmail.com\n- testPassword: SecurePas312!\n- accessToken: Auto-saved from signin/verify responses\n- refreshToken: Auto-saved from signin/verify responses\n- paymentIntentId: Auto-extracted from Create Payment Intent response\n- customerId: Stripe customer ID\n- connectAccountId: Stripe Connect account ID\n- paymentMethodId: Payment method ID\n\nFeatures:\n- Comprehensive refund endpoint with reason, metadata, and Connect options\n- Configurable payment method types (card, apple_pay, google_pay, etc.)\n- Manual capture mode for payment intents\n- Dynamic variable extraction for seamless workflow",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "19990265",
+    "_collection_link": "https://go.postman.co/collection/19990265-4a19928a-dacb-42e1-8086-770fa117dcf0?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Sign Up",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.test('Signup successful', function () {",
+                  "        pm.expect(jsonData.success).to.be.true;",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"{{testEmail}}\",\n    \"password\": \"{{testPassword}}\",\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/auth/signup",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "auth",
+                "signup"
+              ]
+            },
+            "description": "**Purpose:** Register a new user account in the system.\n\n**Why Use This API:**\n- First step in user onboarding process\n- Creates user account with email and password\n- Sends OTP verification email automatically\n- Required before accessing protected endpoints\n\n**Real-Life Scenarios:**\n1. **E-commerce Platform:** Customer creates account to make purchases\n2. **SaaS Application:** New user signs up for a subscription service\n3. **Marketplace:** Seller registers to list products\n4. **Event Platform:** Attendee creates account to buy tickets\n\n**Workflow:**\n1. User submits email, password, firstName, lastName\n2. System creates account (unverified state)\n3. OTP sent to email automatically\n4. User must verify OTP before first login\n\n**Next Steps:**\n- Call \"Verify OTP\" endpoint with the OTP received via email\n- After verification, user can sign in\n\n**Note:** If user already exists (including soft-deleted), account will be restored and OTP resent."
+          },
+          "response": []
+        },
+        {
+          "name": "Sign In",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const jsonData = pm.response.json();",
+                  "    ",
+                  "    if (jsonData.tokens) {",
+                  "        pm.environment.set('accessToken', jsonData.tokens.accessToken);",
+                  "        pm.environment.set('refreshToken', jsonData.tokens.refreshToken);",
+                  "        pm.collectionVariables.set('accessToken', jsonData.tokens.accessToken);",
+                  "        pm.collectionVariables.set('refreshToken', jsonData.tokens.refreshToken);",
+                  "        ",
+                  "        pm.test('Tokens saved', function () {",
+                  "            pm.expect(jsonData.tokens.accessToken).to.exist;",
+                  "            pm.expect(jsonData.tokens.refreshToken).to.exist;",
+                  "        });",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"{{testEmail}}\",\n    \"password\": \"{{testPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/auth/signin",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "auth",
+                "signin"
+              ]
+            },
+            "description": "**Purpose:** Authenticate user and obtain access tokens for API requests.\n\n**Why Use This API:**\n- Required to access protected endpoints\n- Returns JWT tokens (accessToken & refreshToken)\n- Tokens are automatically saved to collection variables\n- User must be verified (OTP verified) to sign in\n\n**Real-Life Scenarios:**\n1. **Mobile App Login:** User enters credentials to access their account\n2. **Web Dashboard:** User logs into admin panel\n3. **API Integration:** Third-party service authenticates to make API calls\n4. **Session Management:** User re-authenticates after token expiration\n\n**Workflow:**\n1. User provides email and password\n2. System validates credentials\n3. If verified, returns accessToken and refreshToken\n4. Tokens saved automatically - use {{accessToken}} in subsequent requests\n\n**Response Includes:**\n- accessToken: Short-lived token (15-60 mins) for API requests\n- refreshToken: Long-lived token to get new accessToken\n- User data: Profile information\n\n**Error Cases:**\n- 401: Invalid credentials\n- 403: User not verified (must verify OTP first)\n\n**Security:** Tokens are stored in collection variables and automatically included in Authorization header."
+          },
+          "response": []
+        },
+        {
+          "name": "Verify OTP",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const jsonData = pm.response.json();",
+                  "    ",
+                  "    if (jsonData.tokens) {",
+                  "        pm.collectionVariables.set('accessToken', jsonData.tokens.accessToken);",
+                  "        pm.collectionVariables.set('refreshToken', jsonData.tokens.refreshToken);",
+                  "        ",
+                  "        pm.test('OTP verified and tokens saved', function () {",
+                  "            pm.expect(jsonData.tokens.accessToken).to.exist;",
+                  "        });",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"{{testEmail}}\",\n    \"otp\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/auth/verify",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "auth",
+                "verify"
+              ]
+            },
+            "description": "**Purpose:** Verify user email address using OTP (One-Time Password) sent during signup.\n\n**Why Use This API:**\n- Required to activate new user account\n- Verifies email ownership\n- Enables user to sign in after verification\n- Returns access tokens upon successful verification\n\n**Real-Life Scenarios:**\n1. **Email Verification:** New user checks email and enters 6-digit OTP code\n2. **Account Activation:** User completes registration process\n3. **Security Verification:** System confirms user owns the email address\n4. **Password Reset:** User verifies identity before resetting password\n\n**Workflow:**\n1. User receives OTP via email after signup\n2. User enters email and OTP code\n3. System validates OTP (expires after set time)\n4. If valid, account is verified and tokens are returned\n5. User can now sign in\n\n**OTP Details:**\n- Format: 6-digit numeric code\n- Expiration: Typically 5-10 minutes\n- One-time use only\n- Check email inbox (and spam folder)\n\n**Development Mode:**\n- In dev environment, OTP can be viewed at: {{baseUrl}}/dev/otp-viewer\n\n**Next Steps:**\n- After verification, use \"Sign In\" endpoint\n- Or tokens are returned directly in response\n\n**Note:** Tokens are automatically saved to collection variables for use in other requests."
+          },
+          "response": []
+        },
+        {
+          "name": "Resend OTP",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"user@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/auth/resend",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "auth",
+                "resend"
+              ]
+            },
+            "description": "**Purpose:** Request a new OTP code when the original expires or is lost.\n\n**Why Use This API:**\n- OTP codes expire after a few minutes\n- User didn't receive original email\n- User entered wrong OTP multiple times\n- Need to restart verification process\n\n**Real-Life Scenarios:**\n1. **Expired OTP:** User takes too long to check email, OTP expired\n2. **Email Not Received:** Email went to spam or was delayed\n3. **Wrong Code Entered:** User made mistakes, needs fresh code\n4. **Account Recovery:** User needs to verify email again\n\n**Workflow:**\n1. User requests new OTP by providing email\n2. System generates new OTP code\n3. New OTP sent to email (invalidates previous OTP)\n4. User can now verify with new code\n\n**Use Cases:**\n- After signup if OTP expired\n- During password reset flow\n- Re-verification of email address\n\n**Note:**\n- Previous OTP becomes invalid\n- New OTP has its own expiration timer\n- Rate limiting may apply to prevent abuse"
+          },
+          "response": []
+        },
+        {
+          "name": "Forget Password",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"user@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/auth/forget-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "auth",
+                "forget-password"
+              ]
+            },
+            "description": "**Purpose:** Initiate password reset process by sending OTP to user's email.\n\n**Why Use This API:**\n- User forgot their password\n- Security requirement: verify email before password change\n- Part of secure password recovery flow\n- Prevents unauthorized password changes\n\n**Real-Life Scenarios:**\n1. **Forgot Password:** User clicks \"Forgot Password\" on login page\n2. **Account Recovery:** User locked out of account, needs to reset password\n3. **Security Breach:** User suspects account compromise, wants to change password\n4. **Password Expiry:** System requires periodic password updates\n\n**Workflow:**\n1. User provides email address\n2. System sends OTP to email\n3. User verifies OTP using \"Verify OTP\" endpoint\n4. User changes password using \"Change Password\" endpoint\n\n**Security Flow:**\nStep 1: Forget Password (this endpoint) \u2192 Sends OTP\nStep 2: Verify OTP \u2192 Validates identity\nStep 3: Change Password \u2192 Sets new password (only newPassword required)\n\n**Note:**\n- OTP is required before password can be changed\n- Email must exist in system\n- OTP expires after set time\n- Rate limiting prevents abuse"
+          },
+          "response": []
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"newPassword\": \"NewSecurePass123!\",\n    \"oldPassword\": \"SecurePass123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/auth/change-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "auth",
+                "change-password"
+              ]
+            },
+            "description": "**Purpose:** Update user's password - supports both regular password change and password reset.\n\n**Why Use This API:**\n- User wants to update password for security\n- User forgot password and needs to reset it\n- Security compliance requires periodic password changes\n- Account recovery after security incident\n\n**Real-Life Scenarios:**\n1. **Regular Password Change:** User logged in, wants to update password\n2. **Password Reset:** User forgot password, completed OTP verification, now setting new password\n3. **Security Update:** User suspects account compromise, proactively changes password\n4. **Policy Compliance:** Organization requires password changes every 90 days\n\n**Two Modes:**\n\n**Mode 1: Regular Password Change (User Logged In)**\n- Requires: oldPassword + newPassword\n- User must be authenticated (accessToken required)\n- Validates old password before allowing change\n\n**Mode 2: Password Reset (After Forgot Password)**\n- Requires: Only newPassword\n- User must have verified OTP first (from forget-password flow)\n- No old password needed\n\n**Workflow for Password Reset:**\n1. Call \"Forget Password\" \u2192 Get OTP\n2. Call \"Verify OTP\" \u2192 Verify identity\n3. Call \"Change Password\" \u2192 Set new password (only newPassword required)\n\n**Security:**\n- Requires authentication token\n- Validates password strength\n- Invalidates all existing sessions (optional)\n- Logs password change event"
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const jsonData = pm.response.json();",
+                  "    ",
+                  "    if (jsonData.tokens) {",
+                  "        pm.collectionVariables.set('accessToken', jsonData.tokens.accessToken);",
+                  "        pm.collectionVariables.set('refreshToken', jsonData.tokens.refreshToken);",
+                  "        ",
+                  "        pm.test('Tokens refreshed', function () {",
+                  "            pm.expect(jsonData.tokens.accessToken).to.exist;",
+                  "        });",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{refreshToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/auth/refresh-token",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "auth",
+                "refresh-token"
+              ]
+            },
+            "description": "**Purpose:** Obtain a new access token when the current one expires, without requiring user to sign in again.\n\n**Why Use This API:**\n- Access tokens expire after 15-60 minutes for security\n- Refresh tokens are long-lived (days/weeks)\n- Maintains user session without re-authentication\n- Essential for seamless user experience\n\n**Real-Life Scenarios:**\n1. **Mobile App:** User's session expires, app automatically refreshes token in background\n2. **Web Application:** Long-running session, token refreshed periodically\n3. **API Integration:** Automated system maintains active session\n4. **Single Sign-On:** Token refresh maintains SSO session\n\n**How It Works:**\n1. Access token expires (401 Unauthorized error)\n2. Application calls this endpoint with refreshToken\n3. System validates refreshToken\n4. Returns new accessToken and refreshToken\n5. Application continues with new tokens\n\n**Token Lifecycle:**\n- accessToken: Short-lived (15-60 mins) - used for API requests\n- refreshToken: Long-lived (7-30 days) - used to get new accessToken\n- Both tokens are automatically saved to collection variables\n\n**Best Practices:**\n- Refresh token before it expires (proactive refresh)\n- Handle 401 errors by refreshing token\n- Store refreshToken securely\n- Rotate refreshToken on each refresh (security)\n\n**Error Handling:**\n- If refreshToken expired: User must sign in again\n- If refreshToken invalid: User must sign in again"
+          },
+          "response": []
+        },
+        {
+          "name": "Logout All Devices",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/auth/logout-all",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "auth",
+                "logout-all"
+              ]
+            },
+            "description": "**Purpose:** Sign out user from all devices and invalidate all active sessions.\n\n**Why Use This API:**\n- User suspects account compromise\n- Security measure: logout from all devices at once\n- User wants to end all active sessions\n- Account security audit requirement\n\n**Real-Life Scenarios:**\n1. **Security Incident:** User notices suspicious activity, logs out all devices\n2. **Device Lost:** User lost phone/laptop, wants to secure account\n3. **Account Sharing:** User shared account, now wants to revoke all access\n4. **Policy Compliance:** Organization requires logout from all devices\n\n**What Happens:**\n- All access tokens invalidated\n- All refresh tokens invalidated\n- User must sign in again on all devices\n- Active sessions terminated immediately\n\n**Use Cases:**\n- Security breach response\n- Account recovery process\n- User account management\n- Compliance requirements\n\n**Note:**\n- Requires valid accessToken\n- Irreversible action - all sessions end\n- User must authenticate again to access system"
+          },
+          "response": []
+        },
+        {
+          "name": "Google OAuth",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/auth/google",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "auth",
+                "google"
+              ]
+            },
+            "description": "**Purpose:** Start Google OAuth authentication flow for social login.\n\n**Why Use This API:**\n- Faster user onboarding (no password creation)\n- Users prefer social login\n- Reduces password-related support issues\n- Leverages Google's security infrastructure\n\n**Real-Life Scenarios:**\n1. **Quick Signup:** New user clicks \"Sign in with Google\" button\n2. **Returning User:** User prefers Google login over email/password\n3. **Mobile App:** Native app integrates Google Sign-In\n4. **Third-party Integration:** Platform offers Google as login option\n\n**How It Works:**\n1. User clicks \"Sign in with Google\" or visits this endpoint\n2. Redirects to Google OAuth consent screen\n3. User authorizes application\n4. Google redirects back to callback endpoint\n5. System creates/updates user account\n6. Returns access tokens\n\n**OAuth Flow:**\n- Step 1: GET /auth/google (this endpoint) \u2192 Redirects to Google\n- Step 2: User authorizes on Google\n- Step 3: GET /auth/google/callback \u2192 Receives authorization code\n- Step 4: System exchanges code for user info\n- Step 5: User account created/updated, tokens returned\n\n**Benefits:**\n- No password management\n- Email automatically verified (Google verified)\n- Faster registration process\n- Trusted authentication provider\n\n**Note:** This is a redirect endpoint - use in browser or handle redirect in your application."
+          },
+          "response": []
+        },
+        {
+          "name": "Facebook OAuth",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/auth/facebook",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "auth",
+                "facebook"
+              ]
+            },
+            "description": "**Purpose:** Start Facebook OAuth authentication flow for social login.\n\n**Why Use This API:**\n- Alternative social login option\n- Users prefer Facebook authentication\n- Faster onboarding process\n- Leverages Facebook's user base\n\n**Real-Life Scenarios:**\n1. **Social Platform:** User clicks \"Sign in with Facebook\"\n2. **Mobile App:** App offers Facebook login option\n3. **Marketplace:** Sellers can register via Facebook\n4. **Event Platform:** Attendees use Facebook to sign up\n\n**How It Works:**\n1. User clicks \"Sign in with Facebook\" or visits this endpoint\n2. Redirects to Facebook OAuth consent screen\n3. User authorizes application\n4. Facebook redirects back to callback endpoint\n5. System creates/updates user account\n6. Returns access tokens\n\n**OAuth Flow:**\n- Step 1: GET /auth/facebook (this endpoint) \u2192 Redirects to Facebook\n- Step 2: User authorizes on Facebook\n- Step 3: GET /auth/facebook/callback \u2192 Receives authorization code\n- Step 4: System exchanges code for user info\n- Step 5: User account created/updated, tokens returned\n\n**Benefits:**\n- No password required\n- Email automatically verified\n- Access to Facebook profile data (if authorized)\n- Quick registration\n\n**Note:** This is a redirect endpoint - use in browser or handle redirect in your application."
+          },
+          "response": []
+        }
+      ],
+      "description": "Authentication endpoints for user signup, signin, OTP verification, password management, and OAuth"
+    },
+    {
+      "name": "Stripe - Customers",
+      "item": [
+        {
+          "name": "Create Customer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const jsonData = pm.response.json();",
+                  "    if (jsonData.customerId) {",
+                  "        pm.collectionVariables.set('customerId', jsonData.customerId);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"customer@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/stripe/customer",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "stripe",
+                "customer"
+              ]
+            },
+            "description": "**Purpose:** Create a Stripe customer record to store payment methods and transaction history.\n\n**Why Use This API:**\n- Required before processing payments for a customer\n- Enables saving payment methods for future use\n- Tracks customer payment history in Stripe\n- Required for subscription billing\n\n**Real-Life Scenarios:**\n1. **E-commerce Checkout:** Customer creates account, system creates Stripe customer\n2. **Subscription Service:** User signs up, customer created for recurring billing\n3. **Marketplace:** Seller registers, customer created to receive payouts\n4. **SaaS Platform:** New user onboarding, customer created for billing\n\n**When to Use:**\n- Before first payment from a user\n- When user wants to save payment methods\n- For subscription-based services\n- Before creating payment intents with saved cards\n\n**Workflow:**\n1. User provides email address\n2. System creates Stripe customer with email\n3. Returns customerId (starts with 'cus_')\n4. CustomerId saved automatically to {{customerId}} variable\n5. Use customerId in future payment operations\n\n**Benefits:**\n- Store multiple payment methods per customer\n- Track payment history\n- Enable saved cards for faster checkout\n- Support subscriptions and recurring payments\n\n**Next Steps:**\n- Use customerId in \"Create Payment Intent\" for saved cards\n- Attach payment methods to customer\n- Create subscriptions for recurring billing"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Customer by Email",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/stripe/customer/:email",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "stripe",
+                "customer",
+                ":email"
+              ],
+              "variable": [
+                {
+                  "key": "email",
+                  "value": "customer@example.com"
+                }
+              ]
+            },
+            "description": "**Purpose:** Retrieve existing Stripe customer ID using email address.\n\n**Why Use This API:**\n- Check if customer already exists before creating new one\n- Retrieve customerId for existing users\n- Link user account to Stripe customer\n- Avoid duplicate customer creation\n\n**Real-Life Scenarios:**\n1. **Returning Customer:** User logs in, system checks if Stripe customer exists\n2. **Account Linking:** Link existing user account to Stripe customer\n3. **Payment History:** Retrieve customer to view past transactions\n4. **Duplicate Prevention:** Check before creating new customer\n\n**When to Use:**\n- Before creating payment intent for existing user\n- When user logs in and wants to use saved cards\n- To check if customer record exists\n- Before creating duplicate customer\n\n**Response:**\n- Returns customerId if found (starts with 'cus_')\n- Returns null if customer doesn't exist\n- CustomerId automatically saved to {{customerId}} variable\n\n**Workflow:**\n1. User provides email\n2. System searches Stripe for customer with that email\n3. Returns customerId if found\n4. Use customerId in payment operations\n\n**Best Practice:**\n- Check for existing customer before creating new one\n- Use this to retrieve customerId for returning users"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Default Payment Method",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/stripe/customer/:id/payment-method",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "stripe",
+                "customer",
+                ":id",
+                "payment-method"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{customerId}}"
+                }
+              ]
+            },
+            "description": "**Purpose:** Retrieve the default payment method for a customer.\n\n**Why Use This API:**\n- Get customer's preferred payment method\n- Pre-fill payment form with saved card\n- Check if customer has saved payment method\n- Display saved card to customer\n\n**Real-Life Scenarios:**\n1. **Checkout:** Pre-select customer's default card\n2. **Account Page:** Display saved payment method\n3. **Subscription:** Check default payment method for billing\n4. **Payment Form:** Pre-fill with saved card details\n\n**Response:**\n- Returns payment method details if exists\n- Returns null if no default payment method\n- Includes card brand, last 4 digits, expiry\n\n**When to Use:**\n- Before creating payment intent\n- On account/payment settings page\n- To display saved payment methods\n- To check payment method availability\n\n**Use Cases:**\n- Pre-fill payment forms\n- Display saved cards\n- Verify payment method exists\n- Account management pages"
+          },
+          "response": []
+        }
+      ],
+      "description": "Stripe customer management endpoints"
+    },
+    {
+      "name": "Stripe - Payment Intents",
+      "item": [
+        {
+          "name": "Create Payment Intent",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const jsonData = pm.response.json();",
+                  "    if (jsonData.clientSecret) {",
+                  "        pm.test('Payment intent created', function () {",
+                  "            pm.expect(jsonData.clientSecret).to.exist;",
+                  "        });",
+                  "        ",
+                  "        // Extract payment intent ID from client secret",
+                  "        // Format: pi_xxxxx_secret_xxxxx",
+                  "        const clientSecret = jsonData.clientSecret;",
+                  "        const paymentIntentId = clientSecret.split('_secret_')[0];",
+                  "        ",
+                  "        if (paymentIntentId) {",
+                  "            pm.collectionVariables.set('paymentIntentId', paymentIntentId);",
+                  "            console.log('Payment Intent ID saved:', paymentIntentId);",
+                  "        }",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"amount\": 100.00,\n    \"currency\": \"usd\",\n    \"customerEmail\": \"{{testEmail}}\",\n    \"description\": \"Test payment\",\n    \"customerId\": null,\n    \"paymentMethodId\": null,\n    \"paymentMethodTypes\": [\"card\"],\n    \"metadata\": {\n        \"orderId\": \"12345\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/stripe/payment-intent",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "stripe",
+                "payment-intent"
+              ]
+            },
+            "description": "**Purpose:** Create a payment intent to process a payment. This is the first step in Stripe's payment flow.\n\n**Why Use This API:**\n- Required before processing any payment\n- Supports multiple payment methods (card, Apple Pay, Google Pay, etc.)\n- Uses manual capture mode (authorize now, capture later)\n- Returns clientSecret for frontend integration\n\n**Real-Life Scenarios:**\n1. **E-commerce Checkout:** Customer adds items to cart, clicks \"Pay Now\", payment intent created\n2. **Subscription Setup:** User selects plan, payment intent created for first payment\n3. **Marketplace:** Buyer purchases product, payment intent created for seller payout\n4. **Event Booking:** Attendee books ticket, payment intent created for ticket purchase\n\n**Payment Flow:**\nStep 1: Create Payment Intent (this endpoint) \u2192 Returns clientSecret\nStep 2: Frontend uses clientSecret with Stripe.js to collect payment\nStep 3: Confirm Payment Intent \u2192 Authorizes payment\nStep 4: Capture Payment \u2192 Actually charges the card (manual capture)\n\n**Key Features:**\n- **Manual Capture:** Payment authorized but not captured immediately\n- **Multiple Payment Methods:** Supports card, apple_pay, google_pay, link, etc.\n- **Metadata:** Store orderId, userId, or any custom data\n- **Customer Linking:** Optional customerId for saved cards\n\n**Request Parameters:**\n- amount: Payment amount in dollars (e.g., 100.00)\n- currency: Currency code (usd, eur, gbp, etc.)\n- customerEmail: Email for receipt\n- paymentMethodTypes: Array of accepted methods (default: ['card'])\n- customerId: Optional, for saved payment methods\n- paymentMethodId: Optional, pre-attached payment method\n- metadata: Custom tracking data (orderId, etc.)\n\n**Response:**\n- clientSecret: Used by frontend Stripe.js to complete payment\n- paymentIntentId: Automatically extracted and saved to {{paymentIntentId}}\n\n**Next Steps:**\n- Use clientSecret with Stripe.js on frontend\n- Or use \"Confirm Payment Intent\" endpoint with paymentMethodId\n- Then \"Capture Payment\" to actually charge the card\n\n**Important:**\n- Amount is in dollars (converted to cents internally)\n- Payment is authorized but NOT captured (manual capture mode)\n- Must call \"Capture Payment\" to actually charge the customer"
+          },
+          "response": []
+        },
+        {
+          "name": "Confirm Payment Intent",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.test('Payment intent confirmed', function () {",
+                  "        pm.expect(jsonData.status).to.exist;",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"paymentMethodId\": \"{{paymentMethodId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/stripe/payment-intent/:id/confirm",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "stripe",
+                "payment-intent",
+                ":id",
+                "confirm"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{paymentIntentId}}",
+                  "description": "Payment Intent ID (auto-populated from Create Payment Intent response)"
+                }
+              ]
+            },
+            "description": "Confirm a payment intent using the payment intent ID from Create Payment Intent response. The paymentIntentId is automatically extracted from the clientSecret."
+          },
+          "response": []
+        },
+        {
+          "name": "Capture Payment Intent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/stripe/payment-intent/:id/capture",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "stripe",
+                "payment-intent",
+                ":id",
+                "capture"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{paymentIntentId}}"
+                }
+              ]
+            },
+            "description": "Capture a payment intent"
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel Payment Intent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/stripe/payment-intent/:id/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "stripe",
+                "payment-intent",
+                ":id",
+                "cancel"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{paymentIntentId}}"
+                }
+              ]
+            },
+            "description": "Cancel a payment intent"
+          },
+          "response": []
+        },
+        {
+          "name": "Refund Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"amount\": 50.00,\n    \"reason\": \"requested_by_customer\",\n    \"metadata\": {\n        \"refundId\": \"REF-12345\",\n        \"orderId\": \"ORD-67890\",\n        \"note\": \"Customer requested refund\"\n    },\n    \"reverseTransfer\": false,\n    \"refundApplicationFee\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/stripe/payment-intent/:id/refund",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "stripe",
+                "payment-intent",
+                ":id",
+                "refund"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{paymentIntentId}}",
+                  "description": "Payment Intent ID (auto-populated from Create Payment Intent response)"
+                }
+              ]
+            },
+            "description": "Refund a payment (partial or full)\n\n**Optional fields:**\n- `amount`: Refund amount in dollars. If not provided, full refund will be issued.\n- `reason`: Refund reason - 'duplicate', 'fraudulent', or 'requested_by_customer'\n- `metadata`: Custom metadata for tracking (e.g., refundId, orderId, note)\n- `reverseTransfer`: For Connect accounts - whether to reverse the transfer\n- `refundApplicationFee`: For Connect accounts - whether to refund the application fee\n\n**Examples:**\n- Full refund: `{}` or `{ \"reason\": \"requested_by_customer\" }`\n- Partial refund: `{ \"amount\": 50.00 }`\n- With metadata: `{ \"amount\": 50.00, \"metadata\": { \"refundId\": \"REF-123\" } }`"
+          },
+          "response": []
+        },
+        {
+          "name": "Bulk Refund",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"paymentIntentIds\": [\n        \"pi_1234567890\",\n        \"pi_0987654321\"\n    ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/stripe/payment-intents/bulk-refund",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "stripe",
+                "payment-intents",
+                "bulk-refund"
+              ]
+            },
+            "description": "**Purpose:** Refund multiple payment intents in a single operation.\n\n**Why Use This API:**\n- Process multiple refunds efficiently\n- Handle batch refund operations\n- Refund multiple orders at once\n- Automated refund processing\n\n**Real-Life Scenarios:**\n1. **Batch Processing:** Refund all orders from a cancelled event\n2. **System Error:** Refund all payments affected by system issue\n3. **Promotion Reversal:** Reverse multiple promotional charges\n4. **Account Closure:** Refund all pending transactions for closed account\n\n**How It Works:**\n- Accepts array of paymentIntentIds\n- Processes each refund individually\n- Returns results and errors separately\n- Continues processing even if some fail\n\n**Response Structure:**\n- results: Array of successful refunds with status and amount\n- errors: Array of failed refunds with error messages\n\n**When to Use:**\n- Multiple refunds needed\n- Batch operations\n- Automated refund processing\n- Error recovery scenarios\n\n**Best Practice:**\n- Use for 10+ refunds\n- Check results array for successful refunds\n- Review errors array for failures\n- Retry failed refunds individually if needed"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Payment Intent Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/stripe/payment-intent/:id/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "stripe",
+                "payment-intent",
+                ":id",
+                "status"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{paymentIntentId}}"
+                }
+              ]
+            },
+            "description": "Get the status of a payment intent"
+          },
+          "response": []
+        }
+      ],
+      "description": "Stripe payment intent operations"
+    },
+    {
+      "name": "Stripe - Payment Methods",
+      "item": [
+        {
+          "name": "Create Setup Intent",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.test('Setup intent created', function () {",
+                  "        pm.expect(jsonData.clientSecret).to.exist;",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"customerId\": \"{{customerId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/stripe/setup-intent",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "stripe",
+                "setup-intent"
+              ]
+            },
+            "description": "**Purpose:** Create a setup intent to securely save payment methods for future use.\n\n**Why Use This API:**\n- Save customer payment methods securely\n- Enable one-click checkout\n- Store cards for subscriptions\n- Improve user experience\n\n**Real-Life Scenarios:**\n1. **Save Card:** Customer wants to save card for faster checkout\n2. **Subscription Setup:** Save payment method for recurring billing\n3. **Account Settings:** User adds payment method to account\n4. **Marketplace:** Seller adds payout method\n\n**How It Works:**\n1. Create setup intent with customerId\n2. Returns clientSecret\n3. Frontend uses Stripe.js to collect payment method\n4. Payment method saved to customer\n5. Can be used for future payments\n\n**Workflow:**\n- Step 1: Create Setup Intent (this endpoint) \u2192 Get clientSecret\n- Step 2: Frontend uses clientSecret with Stripe.js\n- Step 3: Customer enters card details\n- Step 4: Payment method saved to customer\n- Step 5: Use saved payment method in future payments\n\n**Benefits:**\n- Secure payment method storage\n- PCI compliance handled by Stripe\n- Faster checkout for returning customers\n- Support for multiple payment methods\n\n**Next Steps:**\n- Use clientSecret with Stripe.js Elements\n- Payment method automatically saved to customer\n- Use in \"Create Payment Intent\" with customerId"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Setup Intent (Query)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/stripe/create-card-save-intent?customerId={{customerId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "stripe",
+                "create-card-save-intent"
+              ],
+              "query": [
+                {
+                  "key": "customerId",
+                  "value": "{{customerId}}"
+                }
+              ]
+            },
+            "description": "Get setup intent via query parameter"
+          },
+          "response": []
+        },
+        {
+          "name": "Save Payment Method",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"paymentMethodId\": \"pm_1234567890\",\n    \"customerId\": \"{{customerId}}\",\n    \"setAsDefault\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/stripe/save-payment-method",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "stripe",
+                "save-payment-method"
+              ]
+            },
+            "description": "**Purpose:** Attach a payment method to a customer and optionally set as default.\n\n**Why Use This API:**\n- Link payment method to customer account\n- Set default payment method\n- Enable saved cards for checkout\n- Manage customer payment methods\n\n**Real-Life Scenarios:**\n1. **A Card:** Customer adds new card to account\n2. **Update Default:** Customer changes default payment method\n3. **Multiple Cards:** Customer adds backup payment method\n4. **Subscription:** Set payment method for recurring billing\n\n**Request Parameters:**\n- paymentMethodId: Payment method to attach (from setup intent or payment)\n- customerId: Stripe customer ID\n- setAsDefault: Whether to set as default payment method\n\n**What Happens:**\n- Payment method attached to customer\n- If setAsDefault=true, becomes default payment method\n- Can be used in future payment intents\n- Appears in customer's saved payment methods\n\n**Use Cases:**\n- After setup intent completion\n- When customer adds new card\n- Updating default payment method\n- Managing customer payment methods\n\n**Benefits:**\n- Faster checkout (no need to re-enter card)\n- Better user experience\n- Support for multiple payment methods\n- Secure storage by Stripe"
+          },
+          "response": []
+        }
+      ],
+      "description": "Stripe payment method operations"
+    },
+    {
+      "name": "Stripe Connect - Accounts",
+      "item": [
+        {
+          "name": "Create Connect Account",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const jsonData = pm.response.json();",
+                  "    if (jsonData.accountId) {",
+                  "        pm.collectionVariables.set('connectAccountId', jsonData.accountId);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"country\": \"US\",\n    \"email\": \"merchant@example.com\",\n    \"businessName\": \"My Business\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/stripe/connect/account",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "stripe",
+                "connect",
+                "account"
+              ]
+            },
+            "description": "**Purpose:** Create a Stripe Connect account for marketplace sellers or platform users.\n\n**Why Use This API:**\n- Enable marketplace payments (platform takes fee, seller gets paid)\n- Onboard sellers/merchants to your platform\n- Support multi-party transactions\n- Handle payouts to connected accounts\n\n**Real-Life Scenarios:**\n1. **Marketplace:** Seller registers to sell products, Connect account created\n2. **Platform:** Service provider joins platform, account created for payouts\n3. **Gig Economy:** Freelancer signs up, account created to receive payments\n4. **Event Platform:** Organizer creates account to receive ticket sales\n\n**How Stripe Connect Works:**\n- Platform (you) creates Connect account for seller\n- Customer pays platform\n- Platform takes application fee\n- Remaining amount transferred to seller's Connect account\n- Seller receives payout to their bank account\n\n**Account Types:**\n- Express: Quick onboarding, Stripe handles KYC\n- Standard: Full control, you handle KYC\n- Custom: Maximum control, requires additional setup\n\n**Workflow:**\n1. Create Connect Account (this endpoint) \u2192 Get accountId\n2. Create Account Link \u2192 Onboard seller (KYC, bank details)\n3. Seller completes onboarding\n4. Account ready to receive payments\n5. Create payouts to seller's bank account\n\n**Response:**\n- accountId: Stripe Connect account ID (starts with 'acct_')\n- Saved to {{connectAccountId}} variable\n- Account in 'pending' status until onboarding complete\n\n**Next Steps:**\n- Create account link for onboarding\n- Seller completes KYC and adds bank account\n- Account ready for payouts"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Connect Account",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/stripe/connect/account/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "stripe",
+                "connect",
+                "account",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{connectAccountId}}"
+                }
+              ]
+            },
+            "description": "Get Connect account details"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Account Link",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"refreshUrl\": \"https://example.com/refresh\",\n    \"returnUrl\": \"https://example.com/return\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/stripe/connect/account/:id/link",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "stripe",
+                "connect",
+                "account",
+                ":id",
+                "link"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{connectAccountId}}"
+                }
+              ]
+            },
+            "description": "**Purpose:** Gate onboarding link for Stripe Connect account (KYC, bank details).\n\n**Why Use This API:**\n- Required for seller to complete account setup\n- Handles KYC (Know Your Customer) verification\n- Seller adds bank account for payouts\n- Completes Connect account activation\n\n**Real-Life Scenarios:**\n1. **Seller Onboarding:** New seller needs to complete account setup\n2. **KYC Verification:** Seller must verify identity and business\n3. **Bank Account:** Seller adds bank account to receive payouts\n4. **Account Update:** Seller needs to update account information\n\n**How It Works:**\n- Creates secure onboarding link\n- Seller redirected to Stripe-hosted page\n- Completes identity verification\n- Adds bank account details\n- Returns to your platform via returnUrl\n\n**Request Parameters:**\n- refreshUrl: Where to redirect if link expires\n- returnUrl: Where to redirect after onboarding complete\n\n**Onboarding Process:**\n1. Seller clicks account link\n2. Completes identity verification (KYC)\n3. Adds business information\n4. Adds bank account for payouts\n5. Returns to your platform\n\n**Response:**\n- url: Onboarding link for seller\n- expires_at: Link expiration time\n\n**Use Cases:**\n- New seller onboarding\n- Account information updates\n- Re-verification required\n- Bank account changes"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Connect Account Balance",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/stripe/connect/account/:id/balance",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "stripe",
+                "connect",
+                "account",
+                ":id",
+                "balance"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{connectAccountId}}"
+                }
+              ]
+            },
+            "description": "Get Connect account balance"
+          },
+          "response": []
+        }
+      ],
+      "description": "Stripe Connect account operations"
+    },
+    {
+      "name": "Stripe Connect - Bank Accounts",
+      "item": [
+        {
+          "name": "List External Accounts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/stripe/connect/account/:id/external-accounts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "stripe",
+                "connect",
+                "account",
+                ":id",
+                "external-accounts"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{connectAccountId}}"
+                }
+              ]
+            },
+            "description": "List external bank accounts for a Connect account"
+          },
+          "response": []
+        },
+        {
+          "name": "Add Bank Account",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"connectAccountId\": \"{{connectAccountId}}\",\n    \"bankAccountNumber\": \"000123456789\",\n    \"routingNumber\": \"110000000\",\n    \"accountHolderName\": \"John Doe\",\n    \"country\": \"US\",\n    \"currency\": \"usd\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/stripe/payouts/add-bank-accounts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "stripe",
+                "payouts",
+                "add-bank-accounts"
+              ]
+            },
+            "description": "**Purpose:** Add external bank account to Stripe Connect account for payouts.\n\n**Why Use This API:**\n- Seller adds bank account to receive payouts\n- Required before creating payouts\n- Support multiple bank accounts\n- Enable seller to reive funds\n\n**Real-Life Scenarios:**\n1. **Seller Setup:** New seller adds bank account during onboarding\n2. **Account Update:** Seller changes bank account\n3. **Multiple Accounts:** Seller adds backup bank account\n4. **International:** Seller adds account in different country\n\n**How It Works:**\n- Creates external account (bank account) in Stripe\n- Links to Connect account\n- Bank account verified via micro-deposits\n- Ready for payouts after verification\n\n**Request Parameters:**\n- connectAccountId: Connect account ID\n- bankAccountNumber: Account number\n- routingNumber: Bank routing number\n- accountHolderName: Name on account\n- country: Two-letter country code\n- currency: Account currency\n\n**Verification Process:**\n1. Bank account added\n2. Stripe sends 2 small deposits (micro-deposits)\n3. Seller verifies amounts\n4. Account activated for payouts\n\n**Response:**\n- externalAccountId: Bank account ID (starts with 'ba_')\n- status: new, verified, verification_failed\n- verification: Micro-deposit verification details\n\n**Use Cases:**\n- Initial account setup\n- Adding additional accounts\n- Updating account information\n- International account support"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Bank Account",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"connectAccountId\": \"{{connectAccountId}}\",\n    \"externalAccountId\": \"ba_1234567890\",\n    \"bankAccountNumber\": \"000123456789\",\n    \"routingNumber\": \"110000000\",\n    \"accountHolderName\": \"John Doe\",\n    \"country\": \"US\",\n    \"currency\": \"usd\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/stripe/payouts/add-bank-accounts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "stripe",
+                "payouts",
+                "add-bank-accounts"
+              ]
+            },
+            "description": "Update external bank account"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Bank Account",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"connectAccountId\": \"{{connectAccountId}}\",\n    \"externalAccountId\": \"ba_1234567890\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/stripe/payouts/delete-bank-accounts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "stripe",
+                "payouts",
+                "delete-bank-accounts"
+              ]
+            },
+            "description": "Delete external bank account"
+          },
+          "response": []
+        }
+      ],
+      "description": "Stripe Connect bank account operations"
+    },
+    {
+      "name": "Stripe Connect - Payouts",
+      "item": [
+        {
+          "name": "Create Payout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const jsonData = pm.response.json();",
+                  "    if (jsonData.id) {",
+                  "        pm.collectionVariables.set('payoutId', jsonData.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"connectAccountId\": \"{{connectAccountId}}\",\n    \"amount\": 100.50,\n    \"currency\": \"usd\",\n    \"externalAccountId\": \"ba_1234567890\",\n    \"description\": \"Revenue payout\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/stripe/connect/payout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "stripe",
+                "connect",
+                "payout"
+              ]
+            },
+            "description": "**Purpose:** Transfer funds from Connect account to seller's bank account.\n\n**Why Use This API:**\n- Pay sellers their earnings\n- Transfer marketplace revenue to sellers\n- Process seller payouts\n- Complete the payment flow\n\n**Real-Life Scenarios:**\n1. **Marketplace Payout:** Seller's earnings transferred to bank account\n2. **Weekly Payout:** Scheduled payout of accumulated revenue\n3. **Manual Payout:** Admin-initiated payout to seller\n4. **Revenue Distribution:** Platform distributes funds to sellers\n\n**How It Works:**\n- Transfers funds from Connect account balance\n- Sends to seller's external bank account\n- Takes 2-7 business days to arrive\n- Can be instant in some regions (Stripe Instant Payouts)\n\n**Request Parameters:**\n- connectAccountId: Seller's Connect account ID\n- amount: Payout amount in dollars\n- currency: Currency code (usd, eur, etc.)\n- externalAccountId: Bank account ID to receive payout\n- description: Optional payout description\n\n**Payout Flow:**\n1. Customer pays platform\n2. Platform takes application fee\n3. Remaining amount in Connect account balance\n4. Create Payout (this endpoint) \u2192 Transfer to seller's bank\n5. Seller receives funds in 2-7 business days\n\n**Response:**\n- payoutId: Stripe payout ID\n- status: pending, in_transit, paid, failed\n- amount: Payout amount\n- arrival_date: When funds will arrive\n\n**Use Cases:**\n- Weekly/monthly seller payouts\n- On-demand payouts\n- Revenue distribution\n- Seller earnings withdrawal"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Payout Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/stripe/connect/payout/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "stripe",
+                "connect",
+                "payout",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{payoutId}}"
+                }
+              ]
+            },
+            "description": "Get payout status"
+          },
+          "response": []
+        },
+        {
+          "name": "List Payouts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/stripe/payouts?connectAccountId={{connectAccountId}}&limit=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "stripe",
+                "payouts"
+              ],
+              "query": [
+                {
+                  "key": "connectAccountId",
+                  "value": "{{connectAccountId}}"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "List payouts for Connect account"
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel Payout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/stripe/payouts/:id/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "stripe",
+                "payouts",
+                ":id",
+                "cancel"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{payoutId}}"
+                }
+              ]
+            },
+            "description": "Cancel a payout"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Payout Balance",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/stripe/payouts/balance?connectAccountId={{connectAccountId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "stripe",
+                "payouts",
+                "balance"
+              ],
+              "query": [
+                {
+                  "key": "connectAccountId",
+                  "value": "{{connectAccountId}}"
+                }
+              ]
+            },
+            "description": "Get Connect account balance for payouts"
+          },
+          "response": []
+        }
+      ],
+      "description": "Stripe Connect payout operations"
+    },
+    {
+      "name": "Stripe - Webhooks",
+      "item": [
+        {
+          "name": "Handle Webhook",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "stripe-signature",
+                "value": "{{stripeSignature}}",
+                "description": "Stripe webhook signature"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"id\": \"evt_1234567890\",\n    \"type\": \"payment_intent.succeeded\",\n    \"data\": {\n        \"object\": {\n            \"id\": \"pi_1234567890\",\n            \"status\": \"succeeded\"\n        }\n    }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/stripe/webhook",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "stripe",
+                "webhook"
+              ]
+            },
+            "description": "Handle Stripe webhook events. Note: This endpoint requires raw body and stripe-signature header."
+          },
+          "response": []
+        }
+      ],
+      "description": "Stripe webhook handling"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "apiVersion",
+      "value": "v1"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "refreshToken",
+      "value": ""
+    },
+    {
+      "key": "customerId",
+      "value": ""
+    },
+    {
+      "key": "paymentIntentId",
+      "value": ""
+    },
+    {
+      "key": "connectAccountId",
+      "value": ""
+    },
+    {
+      "key": "payoutId",
+      "value": ""
+    },
+    {
+      "key": "paymentMethodId",
+      "value": "pm_card_visa"
+    },
+    {
+      "key": "testEmail",
+      "value": "md.tarikulislamjuel@gmail.com"
+    },
+    {
+      "key": "testPassword",
+      "value": "SecurePas312!"
+    }
+  ]
+}
