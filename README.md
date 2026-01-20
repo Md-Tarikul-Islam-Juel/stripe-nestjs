@@ -638,11 +638,3 @@ See the [LICENSE](./LICENSE) file for full details.
 
 **Built with ❤️ using NestJS and Clean Architecture**
 
----
-
-## 🎓 Learning Resources
-
-- [NestJS Documentation](https://docs.nestjs.com/) - Official NestJS guide
-- [Stripe API Reference](https://stripe.com/docs/api) - Complete Stripe API docs
-- [Prisma Documentation](https://www.prisma.io/docs) - Database ORM guide
-- [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) - Architecture principles
