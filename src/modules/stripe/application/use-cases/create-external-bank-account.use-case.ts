@@ -10,11 +10,11 @@ import { StripeConnectServicePort } from '../../domain/ports/stripe.service.port
 export class CreateExternalBankAccountUseCase {
   constructor(
     @Inject(STRIPE_CONNECT_SERVICE_PORT)
-    private readonly stripeConnectService: StripeConnectServicePort,
+    private readonly stripeConnectServicePort: StripeConnectServicePort,
   ) {}
 
   async execute(command: CreateExternalBankAccountCommand) {
-    return this.stripeConnectService.createExternalBankAccount({
+    return this.stripeConnectServicePort.createExternalBankAccount({
       connectAccountId: command.connectAccountId,
       bankAccountNumber: command.bankAccountNumber,
       routingNumber: command.routingNumber,

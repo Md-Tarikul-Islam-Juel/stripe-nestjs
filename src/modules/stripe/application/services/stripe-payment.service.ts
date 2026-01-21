@@ -122,6 +122,17 @@ export class StripePaymentService {
     return this.stripePaymentService.getDefaultPaymentMethod(customerId);
   }
 
+  async createTopup(params: {
+    amount: number;
+    currency: string;
+    source?: string;
+    description?: string;
+    metadata?: Record<string, string>;
+  }) {
+    // Write operation - using repository directly (could be converted to use-case)
+    return this.stripePaymentService.createTopup(params);
+  }
+
   async attachPaymentMethod(paymentMethodId: string, customerId: string) {
     // Using repository directly - could be converted to use-case if needed
     return this.stripePaymentService.attachPaymentMethod(

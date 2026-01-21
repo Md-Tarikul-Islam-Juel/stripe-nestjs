@@ -10,7 +10,7 @@ import { StripePaymentServicePort } from '../../domain/ports/stripe.service.port
 export class SavePaymentMethodUseCase {
   constructor(
     @Inject(STRIPE_PAYMENT_SERVICE_PORT)
-    private readonly stripePaymentService: StripePaymentServicePort,
+    private readonly stripePaymentServicePort: StripePaymentServicePort,
   ) {}
 
   async execute(command: SavePaymentMethodCommand): Promise<{
@@ -18,13 +18,13 @@ export class SavePaymentMethodUseCase {
     paymentMethodId: string;
     customerId: string;
   }> {
-    await this.stripePaymentService.attachPaymentMethod(
+    await this.stripePaymentServicePort.attachPaymentMethod(
       command.paymentMethodId,
       command.customerId,
     );
 
     if (command.setAsDefault) {
-      await this.stripePaymentService.setDefaultPaymentMethod(
+      await this.stripePaymentServicePort.setDefaultPaymentMethod(
         command.customerId,
         command.paymentMethodId,
       );

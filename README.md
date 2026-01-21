@@ -57,6 +57,8 @@ Visit `http://localhost:3000/api` for interactive API documentation (Swagger).
 - [Database Setup](#-database-setup)
 - [Running the Application](#-running-the-application)
 - [API Documentation](#-api-documentation)
+  - [Payment Flows Documentation](#-payment-flows-documentation)
+  - [Stripe Connect Guide](#-stripe-connect-guide)
 - [Postman Collection](#-postman-collection)
 - [Development Commands](#-development-commands)
 - [License](#-license)
@@ -261,6 +263,10 @@ STRIPE_SECRET_KEY=sk_test_...
 STRIPE_ACCOUNT_ID=acct_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 STRIPE_PUBLISHABLE_KEY=pk_test_...
+STRIPE_DEFAULT_BUSINESS_NAME=tarikul's store
+STRIPE_CONNECT_ACCOUNT_TYPE=custom
+STRIPE_CONNECT_REFRESH_URL=https://example.com/refresh
+STRIPE_CONNECT_RETURN_URL=https://example.com/return
 
 # ============================================================================
 # API Versioning
@@ -362,6 +368,41 @@ npm run start:prod
 ---
 
 ## 📚 API Documentation
+
+### 📖 Payment Flows Documentation
+
+For detailed step-by-step guides on how to implement different payment flows, see:
+
+**[📘 Stripe Payment Flows Guide](./docs/STRIPE_FLOWS.md)**
+
+This comprehensive guide includes:
+- 💳 **Save Card Flow** - How to save customer payment methods
+- 💰 **Complete Payment Flow** - Full payment processing (create → confirm → capture)
+- 🔄 **Refund Flow** - Process full and partial refunds
+
+### 🏪 Stripe Connect Guide
+
+For complete guide on working with Stripe Connect accounts (marketplace functionality), see:
+
+**[📗 Stripe Connect Account Guide](./docs/STRIPE_CONNECT_GUIDE.md)**
+
+This guide covers:
+- 🚀 **Quick Start** - Get started in 3 steps
+- 📊 **Account Management** - Understanding account status and flow
+- ⚠️ **Common Issues & Solutions** - Fix "fennec" name, permission errors, etc.
+- 📚 **API Endpoints Reference** - Complete endpoint documentation
+- ✅ **Best Practices** - Production-ready patterns
+- 👤 **Customer Management Flow** - Create and manage customers
+- 🏪 **Stripe Connect Marketplace Flow** - Multi-party payment processing
+
+Each flow includes:
+- Step-by-step instructions
+- Code examples (frontend + backend)
+- Request/response examples
+- Flow diagrams
+- Use cases
+
+---
 
 ### Base URL
 

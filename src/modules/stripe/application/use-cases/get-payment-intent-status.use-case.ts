@@ -9,10 +9,10 @@ import { StripePaymentServicePort } from '../../domain/ports/stripe.service.port
 export class GetPaymentIntentStatusUseCase {
   constructor(
     @Inject(STRIPE_PAYMENT_SERVICE_PORT)
-    private readonly stripePaymentService: StripePaymentServicePort,
+    private readonly stripePaymentServicePort: StripePaymentServicePort,
   ) {}
 
   async execute(paymentIntentId: string) {
-    return this.stripePaymentService.getPaymentIntentStatus(paymentIntentId);
+    return this.stripePaymentServicePort.getPaymentIntentStatus(paymentIntentId);
   }
 }

@@ -132,6 +132,23 @@ export interface StripePaymentServicePort {
       error: string;
     }>;
   }>;
+
+  /**
+   * Create a top-up to add funds directly to available balance
+   */
+  createTopup(params: {
+    amount: number;
+    currency: string;
+    source?: string; // Payment method ID or source ID
+    description?: string;
+    metadata?: Record<string, string>;
+  }): Promise<{
+    id: string;
+    amount: number;
+    currency: string;
+    status: string;
+    availableOn: number | null;
+  }>;
 }
 
 export interface StripeConnectServicePort {
@@ -256,7 +273,7 @@ export interface StripeConnectServicePort {
   /**
    * Get payout status
    */
-  getPayoutStatus(payoutId: string): Promise<{
+  getPayoutStatus(payoutId: string, connectAccountId: string): Promise<{
     id: string;
     amount: number;
     currency: string;

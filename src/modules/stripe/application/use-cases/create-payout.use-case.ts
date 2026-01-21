@@ -10,14 +10,14 @@ import { StripeConnectServicePort } from '../../domain/ports/stripe.service.port
 export class CreatePayoutUseCase {
   constructor(
     @Inject(STRIPE_CONNECT_SERVICE_PORT)
-    private readonly stripeConnectService: StripeConnectServicePort,
+    private readonly stripeConnectServicePort: StripeConnectServicePort,
   ) {}
 
   async execute(command: CreatePayoutCommand) {
     // Convert amount from dollars to cents
     const amountInCents = Math.round(command.amount * 100);
 
-    return this.stripeConnectService.createPayout({
+    return this.stripeConnectServicePort.createPayout({
       connectAccountId: command.connectAccountId,
       amount: amountInCents,
       currency: command.currency,

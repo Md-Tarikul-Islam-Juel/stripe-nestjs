@@ -10,11 +10,11 @@ import { StripePaymentServicePort } from '../../domain/ports/stripe.service.port
 export class BulkRefundPaymentUseCase {
   constructor(
     @Inject(STRIPE_PAYMENT_SERVICE_PORT)
-    private readonly stripePaymentService: StripePaymentServicePort,
+    private readonly stripePaymentServicePort: StripePaymentServicePort,
   ) {}
 
   async execute(command: BulkRefundPaymentCommand) {
-    return this.stripePaymentService.bulkRefundPaymentIntents(
+    return this.stripePaymentServicePort.bulkRefundPaymentIntents(
       command.paymentIntentIds,
     );
   }

@@ -10,7 +10,7 @@ import { StripePaymentServicePort } from '../../domain/ports/stripe.service.port
 export class RefundPaymentUseCase {
   constructor(
     @Inject(STRIPE_PAYMENT_SERVICE_PORT)
-    private readonly stripePaymentService: StripePaymentServicePort,
+    private readonly stripePaymentServicePort: StripePaymentServicePort,
   ) {}
 
   async execute(command: RefundPaymentCommand) {
@@ -24,7 +24,7 @@ export class RefundPaymentUseCase {
       ? (command.reason as 'duplicate' | 'fraudulent' | 'requested_by_customer')
       : undefined;
 
-    return this.stripePaymentService.refundPayment({
+    return this.stripePaymentServicePort.refundPayment({
       paymentIntentId: command.paymentIntentId,
       amount: amountInCents,
       reason,

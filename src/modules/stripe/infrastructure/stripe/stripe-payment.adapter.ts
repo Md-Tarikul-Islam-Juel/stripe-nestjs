@@ -488,4 +488,47 @@ export class StripePaymentAdapter implements StripePaymentServicePort {
 
     return new StripePaymentError(error.message || defaultMessage, error.code, error.type);
   }
+
+  async createTopup(params: {
+    amount: number;
+    currency: string;
+    source?: string;
+    description?: string;
+    metadata?: Record<string, string>;
+  }): Promise<{
+    id: string;
+    amount: number;
+    currency: string;
+    status: string;
+    availableOn: number | null;
+  }> {
+    try {
+      // Convert amount from dollars to cents
+      const amountInCents = Math.round(params.amount * 100);
+
+      const topupParams: Stripe.TopupCreateParams = {
+        amount: amountInCents,
+        currency: params.currency.toLowerCase(),
+        description: params.description,
+        metadata: params.metadata || {},
+      };
+
+      // If source (payment method) is provided, use it
+      if (params.source) {
+        topupParams.source = params.source;
+      }
+
+      const topup = await this.stripe.topups.create(topupParams);
+
+      return {
+        id: topup.id,
+        amount: topup.amount,
+        currency: topup.currency,
+        status: topup.status,
+        availableOn: (topup as any).available_on || null,
+      };
+    } catch (error: any) {
+      throw this.handleStripeError(error, 'Failed to create top-up');
+    }
+  }
 }

@@ -9,12 +9,12 @@ import { StripePaymentServicePort } from '../../domain/ports/stripe.service.port
 export class CreateSetupIntentUseCase {
   constructor(
     @Inject(STRIPE_PAYMENT_SERVICE_PORT)
-    private readonly stripePaymentService: StripePaymentServicePort,
+    private readonly stripePaymentServicePort: StripePaymentServicePort,
   ) {}
 
   async execute(customerId: string): Promise<{ clientSecret: string }> {
     const clientSecret =
-      await this.stripePaymentService.createSetupIntent(customerId);
+      await this.stripePaymentServicePort.createSetupIntent(customerId);
     return { clientSecret };
   }
 }

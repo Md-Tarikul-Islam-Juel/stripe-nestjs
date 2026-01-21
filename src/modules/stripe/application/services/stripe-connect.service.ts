@@ -1,4 +1,5 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { CreateConnectAccountDto } from '../dto/create-connect-account.dto';
 import { CreatePayoutDto } from '../dto/create-payout.dto';
 import { CreateAccountLinkCommand } from '../commands/create-account-link.command';
@@ -26,6 +27,7 @@ export class StripeConnectService {
     private readonly createPayoutUseCase: CreatePayoutUseCase,
     @Inject(STRIPE_CONNECT_SERVICE_PORT)
     private readonly stripeConnectService: StripeConnectServicePort,
+    private readonly configService: ConfigService,
   ) {}
 
   async createConnectAccount(dto: CreateConnectAccountDto) {
@@ -33,20 +35,85 @@ export class StripeConnectService {
     return this.createConnectAccountUseCase.execute(command);
   }
 
-  async getConnectAccount(accountId: string) {
+  async getConnectAccount(
+    accountId: string,
+    refreshUrl?: string,
+    returnUrl?: string,
+  ) {
     // Read operation - using repository directly
-    return this.stripeConnectService.getConnectAccount(accountId);
+    const account = await this.stripeConnectService.getConnectAccount(accountId);
+
+    // Check if account needs onboarding
+    const needsOnboarding =
+      !account.detailsSubmitted ||
+      !account.chargesEnabled ||
+      !account.payoutsEnabled;
+
+    // Use provided URLs or fall back to environment variables
+    const finalRefreshUrl =
+      refreshUrl ||
+      this.configService.get<string>('STRIPE_CONNECT_REFRESH_URL');
+    const finalReturnUrl =
+      returnUrl ||
+      this.configService.get<string>('STRIPE_CONNECT_RETURN_URL');
+
+    // If account is incomplete and URLs available (provided or from env), create account link
+    if (needsOnboarding && finalRefreshUrl && finalReturnUrl) {
+      const accountLink = await this.createAccountLink(
+        accountId,
+        finalRefreshUrl,
+        finalReturnUrl,
+      );
+
+      return {
+        ...account,
+        needsOnboarding: true,
+        onboardingUrl: accountLink.url,
+        onboardingExpiresAt: accountLink.expiresAt,
+      };
+    }
+
+    // If account is incomplete but no URLs provided, indicate it needs onboarding
+    if (needsOnboarding) {
+      return {
+        ...account,
+        needsOnboarding: true,
+        onboardingUrl: null,
+        message:
+          'Account onboarding incomplete. Provide refreshUrl and returnUrl query parameters, or set STRIPE_CONNECT_REFRESH_URL and STRIPE_CONNECT_RETURN_URL environment variables.',
+      };
+    }
+
+    // Account is complete
+    return {
+      ...account,
+      needsOnboarding: false,
+    };
   }
 
   async createAccountLink(
     accountId: string,
-    refreshUrl: string,
-    returnUrl: string,
+    refreshUrl?: string,
+    returnUrl?: string,
   ) {
+    // Use provided URLs or fall back to environment variables
+    const finalRefreshUrl =
+      refreshUrl ||
+      this.configService.get<string>('STRIPE_CONNECT_REFRESH_URL');
+    const finalReturnUrl =
+      returnUrl ||
+      this.configService.get<string>('STRIPE_CONNECT_RETURN_URL');
+
+    if (!finalRefreshUrl || !finalReturnUrl) {
+      throw new BadRequestException(
+        'refreshUrl and returnUrl are required. Provide them in the request body or set STRIPE_CONNECT_REFRESH_URL and STRIPE_CONNECT_RETURN_URL environment variables.',
+      );
+    }
+
     const command = new CreateAccountLinkCommand(
       accountId,
-      refreshUrl,
-      returnUrl,
+      finalRefreshUrl,
+      finalReturnUrl,
     );
     return this.createAccountLinkUseCase.execute(command);
   }
@@ -109,9 +176,9 @@ export class StripeConnectService {
     return this.createPayoutUseCase.execute(command);
   }
 
-  async getPayoutStatus(payoutId: string) {
+  async getPayoutStatus(payoutId: string, connectAccountId: string) {
     // Read operation - using repository directly
-    return this.stripeConnectService.getPayoutStatus(payoutId);
+    return this.stripeConnectService.getPayoutStatus(payoutId, connectAccountId);
   }
 
   async getConnectBalance(connectAccountId: string) {

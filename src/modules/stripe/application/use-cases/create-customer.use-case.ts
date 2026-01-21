@@ -10,11 +10,11 @@ import { StripePaymentServicePort } from '../../domain/ports/stripe.service.port
 export class CreateCustomerUseCase {
   constructor(
     @Inject(STRIPE_PAYMENT_SERVICE_PORT)
-    private readonly stripePaymentService: StripePaymentServicePort,
+    private readonly stripePaymentServicePort: StripePaymentServicePort,
   ) {}
 
   async execute(command: CreateCustomerCommand): Promise<{ customerId: string }> {
-    const customerId = await this.stripePaymentService.createCustomer(
+    const customerId = await this.stripePaymentServicePort.createCustomer(
       command.email,
     );
     return { customerId };

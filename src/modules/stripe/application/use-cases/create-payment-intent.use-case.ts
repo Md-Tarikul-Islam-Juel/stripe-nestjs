@@ -11,7 +11,7 @@ import { PaymentIntentResponseDto } from '../dto/payment-intent-response.dto';
 export class CreatePaymentIntentUseCase {
   constructor(
     @Inject(STRIPE_PAYMENT_SERVICE_PORT)
-    private readonly stripePaymentService: StripePaymentServicePort,
+    private readonly stripePaymentServicePort: StripePaymentServicePort,
   ) {}
 
   async execute(
@@ -20,7 +20,7 @@ export class CreatePaymentIntentUseCase {
     // Convert amount from dollars to cents
     const amountInCents = Math.round(command.amount * 100);
 
-    const clientSecret = await this.stripePaymentService.createPaymentIntent(
+    const clientSecret = await this.stripePaymentServicePort.createPaymentIntent(
       {
         amount: amountInCents,
         currency: command.currency,

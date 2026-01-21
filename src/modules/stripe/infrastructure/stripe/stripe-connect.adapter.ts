@@ -1,7 +1,9 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Stripe from 'stripe';
@@ -46,13 +48,36 @@ export class StripeConnectAdapter implements StripeConnectServicePort {
     detailsSubmitted: boolean;
   }> {
     try {
+      const configuredConnectAccountType = this.configService.get<string>(
+        'STRIPE_CONNECT_ACCOUNT_TYPE',
+      );
+      const connectAccountType =
+        configuredConnectAccountType?.toLowerCase() === 'custom'
+          ? 'custom'
+          : 'express';
+
+      // Use provided business name or fall back to default from config
+      const defaultBusinessName = this.configService.get<string>(
+        'STRIPE_DEFAULT_BUSINESS_NAME',
+      );
+      const businessName = params.businessName || defaultBusinessName;
+
       const connectAccount = await this.stripe.accounts.create({
-        type: 'express',
+        type: connectAccountType,
         country: params.country.toUpperCase(),
         email: params.email,
-        business_profile: params.businessName
+        // Custom accounts need capabilities requested to enable payouts/charges.
+        // Express accounts ignore these and use Stripe-hosted onboarding.
+        capabilities:
+          connectAccountType === 'custom'
+            ? {
+                card_payments: { requested: true },
+                transfers: { requested: true },
+              }
+            : undefined,
+        business_profile: businessName
           ? {
-              name: params.businessName,
+              name: businessName,
             }
           : undefined,
         metadata: params.metadata || {},
@@ -298,7 +323,7 @@ export class StripeConnectAdapter implements StripeConnectServicePort {
     }
   }
 
-  async getPayoutStatus(payoutId: string): Promise<{
+  async getPayoutStatus(payoutId: string, connectAccountId: string): Promise<{
     id: string;
     amount: number;
     currency: string;
@@ -308,7 +333,9 @@ export class StripeConnectAdapter implements StripeConnectServicePort {
     metadata?: Record<string, string>;
   }> {
     try {
-      const payout = await this.stripe.payouts.retrieve(payoutId);
+      const payout = await this.stripe.payouts.retrieve(payoutId, {
+        stripeAccount: connectAccountId,
+      });
 
       return {
         id: payout.id,
@@ -504,20 +531,46 @@ export class StripeConnectAdapter implements StripeConnectServicePort {
    * Handle Stripe errors and convert to domain errors
    */
   private handleStripeError(error: any, defaultMessage: string): Error {
-    if (error.type === 'StripeInvalidRequestError') {
-      return new StripeConnectError(error.message || defaultMessage, error.code);
+    const errorMessage = error?.message || defaultMessage;
+    const errorCode = error?.code;
+    const errorType = error?.type;
+
+    // Normalize error message for checking
+    const normalizedMessage = errorMessage?.toLowerCase() || '';
+
+    // Check for permission denied errors - Stripe can return this in different formats
+    // Stripe error message: "This application does not have the required permissions..."
+    const isPermissionDenied =
+      errorCode === 'permission_denied' ||
+      normalizedMessage.includes('required permissions') ||
+      normalizedMessage.includes('does not have the required') ||
+      normalizedMessage.includes('does not have required') ||
+      normalizedMessage.includes('permission denied') ||
+      errorType === 'StripePermissionError' ||
+      (errorType === 'StripeInvalidRequestError' &&
+        normalizedMessage.includes('permission'));
+
+    if (isPermissionDenied) {
+      return new ForbiddenException(
+        errorMessage ||
+          `${defaultMessage}. This operation is not permitted for Express/Standard Connect accounts. Use account links for onboarding instead.`,
+      );
     }
 
-    if (error.code === 'resource_missing') {
-      if (error.message?.includes('account')) {
-        return new StripeConnectAccountNotFoundError(error.param || '');
+    if (errorType === 'StripeInvalidRequestError') {
+      return new BadRequestException(errorMessage || defaultMessage);
+    }
+
+    if (errorCode === 'resource_missing') {
+      if (normalizedMessage.includes('account')) {
+        return new NotFoundException(errorMessage || defaultMessage);
       }
     }
 
     return new StripeConnectError(
-      error.message || defaultMessage,
-      error.code,
-      error.type,
+      errorMessage || defaultMessage,
+      errorCode,
+      errorType,
     );
   }
 }

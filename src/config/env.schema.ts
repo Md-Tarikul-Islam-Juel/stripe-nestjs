@@ -113,6 +113,27 @@ export class EnvironmentVariables {
   @IsOptional()
   @IsString()
   STRIPE_PUBLISHABLE_KEY?: string;
+
+  @IsOptional()
+  @IsString()
+  STRIPE_DEFAULT_BUSINESS_NAME?: string;
+
+  @IsOptional()
+  @IsString()
+  STRIPE_CONNECT_REFRESH_URL?: string;
+
+  @IsOptional()
+  @IsString()
+  STRIPE_CONNECT_RETURN_URL?: string;
+
+  /**
+   * Stripe Connect account type to create by default.
+   * - express: Stripe-hosted onboarding (recommended)
+   * - custom: Full platform control (required for adding bank accounts via API)
+   */
+  @IsOptional()
+  @IsString()
+  STRIPE_CONNECT_ACCOUNT_TYPE?: string;
 }
 
 export function validateEnv(config: Record<string, unknown>): EnvironmentVariables {
@@ -149,6 +170,15 @@ export function validateEnv(config: Record<string, unknown>): EnvironmentVariabl
 
   if (!validatedConfig.STRIPE_SECRET_KEY.startsWith('sk_test_') && !validatedConfig.STRIPE_SECRET_KEY.startsWith('sk_live_')) {
     throw new Error('STRIPE_SECRET_KEY must start with sk_test_ (test) or sk_live_ (live)');
+  }
+
+  // Validate Stripe Connect account type (if provided)
+  if (validatedConfig.STRIPE_CONNECT_ACCOUNT_TYPE) {
+    const normalizedAccountType = validatedConfig.STRIPE_CONNECT_ACCOUNT_TYPE.toLowerCase();
+    const allowedAccountTypes = ['express', 'custom'];
+    if (!allowedAccountTypes.includes(normalizedAccountType)) {
+      throw new Error('STRIPE_CONNECT_ACCOUNT_TYPE must be one of: express, custom');
+    }
   }
 
   return validatedConfig;

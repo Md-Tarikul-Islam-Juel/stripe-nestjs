@@ -10,11 +10,11 @@ import { StripeConnectServicePort } from '../../domain/ports/stripe.service.port
 export class CreateConnectAccountUseCase {
   constructor(
     @Inject(STRIPE_CONNECT_SERVICE_PORT)
-    private readonly stripeConnectService: StripeConnectServicePort,
+    private readonly stripeConnectServicePort: StripeConnectServicePort,
   ) {}
 
   async execute(command: CreateConnectAccountCommand) {
-    return this.stripeConnectService.createConnectAccount({
+    return this.stripeConnectServicePort.createConnectAccount({
       country: command.country,
       email: command.email,
       businessName: command.businessName,

@@ -1,11 +1,11 @@
 {
   "info": {
-    "_postman_id": "4a19928a-dacb-42e1-8086-770fa117dcf0",
+    "_postman_id": "54ab1f0f-31d1-48ae-a14c-98b5d86903a8",
     "name": "Stripe NestJS API Collection",
-    "description": "Comprehensive Postman collection for Stripe NestJS API with Authentication and Stripe Payment operations.\n\n\u26a0\ufe0f IMPORTANT:\n- Auth endpoints: /{{apiVersion}}/auth/... (requires v1 or v2)\n- Stripe endpoints: /{{apiVersion}}/stripe/... (requires v1 or v2)\n\nVariables:\n- baseUrl: http://localhost:3000\n- apiVersion: v1 (default, can be changed to v2)\n- testEmail: md.tarikulislamjuel@gmail.com\n- testPassword: SecurePas312!\n- accessToken: Auto-saved from signin/verify responses\n- refreshToken: Auto-saved from signin/verify responses\n- paymentIntentId: Auto-extracted from Create Payment Intent response\n- customerId: Stripe customer ID\n- connectAccountId: Stripe Connect account ID\n- paymentMethodId: Payment method ID\n\nFeatures:\n- Comprehensive refund endpoint with reason, metadata, and Connect options\n- Configurable payment method types (card, apple_pay, google_pay, etc.)\n- Manual capture mode for payment intents\n- Dynamic variable extraction for seamless workflow",
+    "description": "Comprehensive Postman collection for Stripe NestJS API with Authentication and Stripe Payment operations.\n\n⚠️ IMPORTANT:\n- Auth endpoints: /{{apiVersion}}/auth/... (requires v1 or v2)\n- Stripe endpoints: /{{apiVersion}}/stripe/... (requires v1 or v2)\n\nVariables:\n- baseUrl: http://localhost:3000\n- apiVersion: v1 (default, can be changed to v2)\n- testEmail: md.tarikulislamjuel@gmail.com\n- testPassword: SecurePas312!\n- accessToken: Auto-saved from signin/verify responses\n- refreshToken: Auto-saved from signin/verify responses\n- paymentIntentId: Auto-extracted from Create Payment Intent response\n- customerId: Stripe customer ID\n- connectAccountId: Stripe Connect account ID\n- paymentMethodId: Payment method ID\n\nFeatures:\n- Comprehensive refund endpoint with reason, metadata, and Connect options\n- Configurable payment method types (card, apple_pay, google_pay, etc.)\n- Manual capture mode for payment intents\n- Stripe Connect: Transfer funds from platform to connected accounts\n- Stripe Connect: Payout funds from connected accounts to bank accounts\n- Dynamic variable extraction for seamless workflow",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "19990265",
-    "_collection_link": "https://go.postman.co/collection/19990265-4a19928a-dacb-42e1-8086-770fa117dcf0?source=collection_link"
+    "_collection_link": "https://go.postman.co/collection/19990265-54ab1f0f-31d1-48ae-a14c-98b5d86903a8?source=collection_link"
   },
   "item": [
     {
@@ -232,7 +232,7 @@
                 "forget-password"
               ]
             },
-            "description": "**Purpose:** Initiate password reset process by sending OTP to user's email.\n\n**Why Use This API:**\n- User forgot their password\n- Security requirement: verify email before password change\n- Part of secure password recovery flow\n- Prevents unauthorized password changes\n\n**Real-Life Scenarios:**\n1. **Forgot Password:** User clicks \"Forgot Password\" on login page\n2. **Account Recovery:** User locked out of account, needs to reset password\n3. **Security Breach:** User suspects account compromise, wants to change password\n4. **Password Expiry:** System requires periodic password updates\n\n**Workflow:**\n1. User provides email address\n2. System sends OTP to email\n3. User verifies OTP using \"Verify OTP\" endpoint\n4. User changes password using \"Change Password\" endpoint\n\n**Security Flow:**\nStep 1: Forget Password (this endpoint) \u2192 Sends OTP\nStep 2: Verify OTP \u2192 Validates identity\nStep 3: Change Password \u2192 Sets new password (only newPassword required)\n\n**Note:**\n- OTP is required before password can be changed\n- Email must exist in system\n- OTP expires after set time\n- Rate limiting prevents abuse"
+            "description": "**Purpose:** Initiate password reset process by sending OTP to user's email.\n\n**Why Use This API:**\n- User forgot their password\n- Security requirement: verify email before password change\n- Part of secure password recovery flow\n- Prevents unauthorized password changes\n\n**Real-Life Scenarios:**\n1. **Forgot Password:** User clicks \"Forgot Password\" on login page\n2. **Account Recovery:** User locked out of account, needs to reset password\n3. **Security Breach:** User suspects account compromise, wants to change password\n4. **Password Expiry:** System requires periodic password updates\n\n**Workflow:**\n1. User provides email address\n2. System sends OTP to email\n3. User verifies OTP using \"Verify OTP\" endpoint\n4. User changes password using \"Change Password\" endpoint\n\n**Security Flow:**\nStep 1: Forget Password (this endpoint) → Sends OTP\nStep 2: Verify OTP → Validates identity\nStep 3: Change Password → Sets new password (only newPassword required)\n\n**Note:**\n- OTP is required before password can be changed\n- Email must exist in system\n- OTP expires after set time\n- Rate limiting prevents abuse"
           },
           "response": []
         },
@@ -265,7 +265,7 @@
                 "change-password"
               ]
             },
-            "description": "**Purpose:** Update user's password - supports both regular password change and password reset.\n\n**Why Use This API:**\n- User wants to update password for security\n- User forgot password and needs to reset it\n- Security compliance requires periodic password changes\n- Account recovery after security incident\n\n**Real-Life Scenarios:**\n1. **Regular Password Change:** User logged in, wants to update password\n2. **Password Reset:** User forgot password, completed OTP verification, now setting new password\n3. **Security Update:** User suspects account compromise, proactively changes password\n4. **Policy Compliance:** Organization requires password changes every 90 days\n\n**Two Modes:**\n\n**Mode 1: Regular Password Change (User Logged In)**\n- Requires: oldPassword + newPassword\n- User must be authenticated (accessToken required)\n- Validates old password before allowing change\n\n**Mode 2: Password Reset (After Forgot Password)**\n- Requires: Only newPassword\n- User must have verified OTP first (from forget-password flow)\n- No old password needed\n\n**Workflow for Password Reset:**\n1. Call \"Forget Password\" \u2192 Get OTP\n2. Call \"Verify OTP\" \u2192 Verify identity\n3. Call \"Change Password\" \u2192 Set new password (only newPassword required)\n\n**Security:**\n- Requires authentication token\n- Validates password strength\n- Invalidates all existing sessions (optional)\n- Logs password change event"
+            "description": "**Purpose:** Update user's password - supports both regular password change and password reset.\n\n**Why Use This API:**\n- User wants to update password for security\n- User forgot password and needs to reset it\n- Security compliance requires periodic password changes\n- Account recovery after security incident\n\n**Real-Life Scenarios:**\n1. **Regular Password Change:** User logged in, wants to update password\n2. **Password Reset:** User forgot password, completed OTP verification, now setting new password\n3. **Security Update:** User suspects account compromise, proactively changes password\n4. **Policy Compliance:** Organization requires password changes every 90 days\n\n**Two Modes:**\n\n**Mode 1: Regular Password Change (User Logged In)**\n- Requires: oldPassword + newPassword\n- User must be authenticated (accessToken required)\n- Validates old password before allowing change\n\n**Mode 2: Password Reset (After Forgot Password)**\n- Requires: Only newPassword\n- User must have verified OTP first (from forget-password flow)\n- No old password needed\n\n**Workflow for Password Reset:**\n1. Call \"Forget Password\" → Get OTP\n2. Call \"Verify OTP\" → Verify identity\n3. Call \"Change Password\" → Set new password (only newPassword required)\n\n**Security:**\n- Requires authentication token\n- Validates password strength\n- Invalidates all existing sessions (optional)\n- Logs password change event"
           },
           "response": []
         },
@@ -374,7 +374,7 @@
                 "google"
               ]
             },
-            "description": "**Purpose:** Start Google OAuth authentication flow for social login.\n\n**Why Use This API:**\n- Faster user onboarding (no password creation)\n- Users prefer social login\n- Reduces password-related support issues\n- Leverages Google's security infrastructure\n\n**Real-Life Scenarios:**\n1. **Quick Signup:** New user clicks \"Sign in with Google\" button\n2. **Returning User:** User prefers Google login over email/password\n3. **Mobile App:** Native app integrates Google Sign-In\n4. **Third-party Integration:** Platform offers Google as login option\n\n**How It Works:**\n1. User clicks \"Sign in with Google\" or visits this endpoint\n2. Redirects to Google OAuth consent screen\n3. User authorizes application\n4. Google redirects back to callback endpoint\n5. System creates/updates user account\n6. Returns access tokens\n\n**OAuth Flow:**\n- Step 1: GET /auth/google (this endpoint) \u2192 Redirects to Google\n- Step 2: User authorizes on Google\n- Step 3: GET /auth/google/callback \u2192 Receives authorization code\n- Step 4: System exchanges code for user info\n- Step 5: User account created/updated, tokens returned\n\n**Benefits:**\n- No password management\n- Email automatically verified (Google verified)\n- Faster registration process\n- Trusted authentication provider\n\n**Note:** This is a redirect endpoint - use in browser or handle redirect in your application."
+            "description": "**Purpose:** Start Google OAuth authentication flow for social login.\n\n**Why Use This API:**\n- Faster user onboarding (no password creation)\n- Users prefer social login\n- Reduces password-related support issues\n- Leverages Google's security infrastructure\n\n**Real-Life Scenarios:**\n1. **Quick Signup:** New user clicks \"Sign in with Google\" button\n2. **Returning User:** User prefers Google login over email/password\n3. **Mobile App:** Native app integrates Google Sign-In\n4. **Third-party Integration:** Platform offers Google as login option\n\n**How It Works:**\n1. User clicks \"Sign in with Google\" or visits this endpoint\n2. Redirects to Google OAuth consent screen\n3. User authorizes application\n4. Google redirects back to callback endpoint\n5. System creates/updates user account\n6. Returns access tokens\n\n**OAuth Flow:**\n- Step 1: GET /auth/google (this endpoint) → Redirects to Google\n- Step 2: User authorizes on Google\n- Step 3: GET /auth/google/callback → Receives authorization code\n- Step 4: System exchanges code for user info\n- Step 5: User account created/updated, tokens returned\n\n**Benefits:**\n- No password management\n- Email automatically verified (Google verified)\n- Faster registration process\n- Trusted authentication provider\n\n**Note:** This is a redirect endpoint - use in browser or handle redirect in your application."
           },
           "response": []
         },
@@ -397,7 +397,7 @@
                 "facebook"
               ]
             },
-            "description": "**Purpose:** Start Facebook OAuth authentication flow for social login.\n\n**Why Use This API:**\n- Alternative social login option\n- Users prefer Facebook authentication\n- Faster onboarding process\n- Leverages Facebook's user base\n\n**Real-Life Scenarios:**\n1. **Social Platform:** User clicks \"Sign in with Facebook\"\n2. **Mobile App:** App offers Facebook login option\n3. **Marketplace:** Sellers can register via Facebook\n4. **Event Platform:** Attendees use Facebook to sign up\n\n**How It Works:**\n1. User clicks \"Sign in with Facebook\" or visits this endpoint\n2. Redirects to Facebook OAuth consent screen\n3. User authorizes application\n4. Facebook redirects back to callback endpoint\n5. System creates/updates user account\n6. Returns access tokens\n\n**OAuth Flow:**\n- Step 1: GET /auth/facebook (this endpoint) \u2192 Redirects to Facebook\n- Step 2: User authorizes on Facebook\n- Step 3: GET /auth/facebook/callback \u2192 Receives authorization code\n- Step 4: System exchanges code for user info\n- Step 5: User account created/updated, tokens returned\n\n**Benefits:**\n- No password required\n- Email automatically verified\n- Access to Facebook profile data (if authorized)\n- Quick registration\n\n**Note:** This is a redirect endpoint - use in browser or handle redirect in your application."
+            "description": "**Purpose:** Start Facebook OAuth authentication flow for social login.\n\n**Why Use This API:**\n- Alternative social login option\n- Users prefer Facebook authentication\n- Faster onboarding process\n- Leverages Facebook's user base\n\n**Real-Life Scenarios:**\n1. **Social Platform:** User clicks \"Sign in with Facebook\"\n2. **Mobile App:** App offers Facebook login option\n3. **Marketplace:** Sellers can register via Facebook\n4. **Event Platform:** Attendees use Facebook to sign up\n\n**How It Works:**\n1. User clicks \"Sign in with Facebook\" or visits this endpoint\n2. Redirects to Facebook OAuth consent screen\n3. User authorizes application\n4. Facebook redirects back to callback endpoint\n5. System creates/updates user account\n6. Returns access tokens\n\n**OAuth Flow:**\n- Step 1: GET /auth/facebook (this endpoint) → Redirects to Facebook\n- Step 2: User authorizes on Facebook\n- Step 3: GET /auth/facebook/callback → Receives authorization code\n- Step 4: System exchanges code for user info\n- Step 5: User account created/updated, tokens returned\n\n**Benefits:**\n- No password required\n- Email automatically verified\n- Access to Facebook profile data (if authorized)\n- Quick registration\n\n**Note:** This is a redirect endpoint - use in browser or handle redirect in your application."
           },
           "response": []
         }
@@ -586,7 +586,7 @@
                 "payment-intent"
               ]
             },
-            "description": "**Purpose:** Create a payment intent to process a payment. This is the first step in Stripe's payment flow.\n\n**Why Use This API:**\n- Required before processing any payment\n- Supports multiple payment methods (card, Apple Pay, Google Pay, etc.)\n- Uses manual capture mode (authorize now, capture later)\n- Returns clientSecret for frontend integration\n\n**Real-Life Scenarios:**\n1. **E-commerce Checkout:** Customer adds items to cart, clicks \"Pay Now\", payment intent created\n2. **Subscription Setup:** User selects plan, payment intent created for first payment\n3. **Marketplace:** Buyer purchases product, payment intent created for seller payout\n4. **Event Booking:** Attendee books ticket, payment intent created for ticket purchase\n\n**Payment Flow:**\nStep 1: Create Payment Intent (this endpoint) \u2192 Returns clientSecret\nStep 2: Frontend uses clientSecret with Stripe.js to collect payment\nStep 3: Confirm Payment Intent \u2192 Authorizes payment\nStep 4: Capture Payment \u2192 Actually charges the card (manual capture)\n\n**Key Features:**\n- **Manual Capture:** Payment authorized but not captured immediately\n- **Multiple Payment Methods:** Supports card, apple_pay, google_pay, link, etc.\n- **Metadata:** Store orderId, userId, or any custom data\n- **Customer Linking:** Optional customerId for saved cards\n\n**Request Parameters:**\n- amount: Payment amount in dollars (e.g., 100.00)\n- currency: Currency code (usd, eur, gbp, etc.)\n- customerEmail: Email for receipt\n- paymentMethodTypes: Array of accepted methods (default: ['card'])\n- customerId: Optional, for saved payment methods\n- paymentMethodId: Optional, pre-attached payment method\n- metadata: Custom tracking data (orderId, etc.)\n\n**Response:**\n- clientSecret: Used by frontend Stripe.js to complete payment\n- paymentIntentId: Automatically extracted and saved to {{paymentIntentId}}\n\n**Next Steps:**\n- Use clientSecret with Stripe.js on frontend\n- Or use \"Confirm Payment Intent\" endpoint with paymentMethodId\n- Then \"Capture Payment\" to actually charge the card\n\n**Important:**\n- Amount is in dollars (converted to cents internally)\n- Payment is authorized but NOT captured (manual capture mode)\n- Must call \"Capture Payment\" to actually charge the customer"
+            "description": "**Purpose:** Create a payment intent to process a payment. This is the first step in Stripe's payment flow.\n\n**Why Use This API:**\n\n- Required before processing any payment\n    \n- Supports multiple payment methods (card, Apple Pay, Google Pay, etc.)\n    \n- Uses manual capture mode (authorize now, capture later)\n    \n- Returns clientSecret for frontend integration\n    \n\n**Real-Life Scenarios:**\n\n1. **E-commerce Checkout:** Customer adds items to cart, clicks \"Pay Now\", payment intent created\n    \n2. **Subscription Setup:** User selects plan, payment intent created for first payment\n    \n3. **Marketplace:** Buyer purchases product, payment intent created for seller payout\n    \n4. **Event Booking:** Attendee books ticket, payment intent created for ticket purchase\n    \n\n**Payment Flow:**  \nStep 1: Create Payment Intent (this endpoint) → Returns clientSecret  \nStep 2: Frontend uses clientSecret with Stripe.js to collect payment  \nStep 3: Confirm Payment Intent → Authorizes payment  \nStep 4: Capture Payment → Actually charges the card (manual capture)\n\n**Key Features:**\n\n- **Manual Capture:** Payment authorized but not captured immediately\n    \n- **Multiple Payment Methods:** Supports card, apple_pay, google_pay, link, etc.\n    \n- **Metadata:** Store orderId, userId, or any custom data\n    \n- **Customer Linking:** Optional customerId for saved cards\n    \n\n**Request Parameters:**\n\n- amount: Payment amount in dollars (e.g., 100.00)\n    \n- currency: Currency code (usd, eur, gbp, etc.)\n    \n- customerEmail: Email for receipt\n    \n- paymentMethodTypes: Array of accepted methods (default: \\['card'\\])\n    \n- customerId: Optional, for saved payment methods\n    \n- paymentMethodId: Optional, pre-attached payment method\n    \n- metadata: Custom tracking data (orderId, etc.)\n    \n\n**Response:**\n\n- clientSecret: Used by frontend Stripe.js to complete payment\n    \n- paymentIntentId: Automatically extracted and saved to {{paymentIntentId}}\n    \n\n**Next Steps:**\n\n- Use clientSecret with Stripe.js on frontend\n    \n- Or use \"Confirm Payment Intent\" endpoint with paymentMethodId\n    \n- Then \"Capture Payment\" to actually charge the card\n    \n\n**Important:**\n\n- Amount is in dollars (converted to cents internally)\n    \n- Payment is authorized but NOT captured (manual capture mode)\n    \n- Must call \"Capture Payment\" to actually charge the customer"
           },
           "response": []
         },
@@ -824,6 +824,58 @@
             "description": "Get the status of a payment intent"
           },
           "response": []
+        },
+        {
+          "name": "Create Top-up",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const jsonData = pm.response.json();",
+                  "    if (jsonData.id) {",
+                  "        pm.collectionVariables.set('topupId', jsonData.id);",
+                  "        pm.test('Top-up created successfully', function () {",
+                  "            pm.expect(jsonData.status).to.be.oneOf(['pending', 'succeeded']);",
+                  "        });",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"amount\": 100.0,\n    \"currency\": \"usd\",\n    \"description\": \"Adding funds to available balance\",\n    \"metadata\": {\n        \"reason\": \"test_balance\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/stripe/topup",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "stripe",
+                "topup"
+              ]
+            },
+            "description": "**Purpose:** Add funds directly to your Stripe **available balance**, bypassing the normal payment settlement period.\n\n**Why Use This API:**\n- Add funds directly to available balance (not pending/incoming)\n- Test your application with available funds\n- Top up your account balance programmatically\n- Add funds faster than waiting for payment settlement\n\n**Real-Life Scenarios:**\n1. **Testing:** Add test funds to available balance for development\n2. **Account Top-up:** Manually add funds to your Stripe balance\n3. **Balance Management:** Ensure sufficient available balance for transfers/payouts\n4. **Quick Funding:** Add funds when you need immediate availability\n\n**How It Works:**\n- Creates a Stripe Top-up object\n- Funds are added to your available balance\n- Can use a payment method (card) or bank transfer\n- Faster than regular payments (may still have some settlement time depending on source)\n\n**Request Parameters:**\n- amount: Amount to add in dollars (e.g., 100.0)\n- currency: Currency code (e.g., usd, eur)\n- source: (Optional) Payment method ID or source ID to use\n- description: (Optional) Description for the top-up\n- metadata: (Optional) Custom tracking data\n\n**Response:**\n- id: Top-up ID (starts with tu_)\n- amount: Amount in cents\n- currency: Currency code\n- status: pending, succeeded, failed, canceled\n- availableOn: Timestamp when funds become available (may be immediate)\n\n**Important Notes:**\n- Top-ups may still have settlement time depending on the payment method\n- In test mode, top-ups can be available immediately\n- Requires a valid payment method or source\n- Minimum top-up amount is typically $1.00\n\n**Use Cases:**\n- Testing with available funds\n- Account balance management\n- Quick funding for transfers/payouts\n- Development and testing workflows"
+          },
+          "response": []
         }
       ],
       "description": "Stripe payment intent operations"
@@ -876,7 +928,7 @@
                 "setup-intent"
               ]
             },
-            "description": "**Purpose:** Create a setup intent to securely save payment methods for future use.\n\n**Why Use This API:**\n- Save customer payment methods securely\n- Enable one-click checkout\n- Store cards for subscriptions\n- Improve user experience\n\n**Real-Life Scenarios:**\n1. **Save Card:** Customer wants to save card for faster checkout\n2. **Subscription Setup:** Save payment method for recurring billing\n3. **Account Settings:** User adds payment method to account\n4. **Marketplace:** Seller adds payout method\n\n**How It Works:**\n1. Create setup intent with customerId\n2. Returns clientSecret\n3. Frontend uses Stripe.js to collect payment method\n4. Payment method saved to customer\n5. Can be used for future payments\n\n**Workflow:**\n- Step 1: Create Setup Intent (this endpoint) \u2192 Get clientSecret\n- Step 2: Frontend uses clientSecret with Stripe.js\n- Step 3: Customer enters card details\n- Step 4: Payment method saved to customer\n- Step 5: Use saved payment method in future payments\n\n**Benefits:**\n- Secure payment method storage\n- PCI compliance handled by Stripe\n- Faster checkout for returning customers\n- Support for multiple payment methods\n\n**Next Steps:**\n- Use clientSecret with Stripe.js Elements\n- Payment method automatically saved to customer\n- Use in \"Create Payment Intent\" with customerId"
+            "description": "**Purpose:** Create a setup intent to securely save payment methods for future use.\n\n**Why Use This API:**\n- Save customer payment methods securely\n- Enable one-click checkout\n- Store cards for subscriptions\n- Improve user experience\n\n**Real-Life Scenarios:**\n1. **Save Card:** Customer wants to save card for faster checkout\n2. **Subscription Setup:** Save payment method for recurring billing\n3. **Account Settings:** User adds payment method to account\n4. **Marketplace:** Seller adds payout method\n\n**How It Works:**\n1. Create setup intent with customerId\n2. Returns clientSecret\n3. Frontend uses Stripe.js to collect payment method\n4. Payment method saved to customer\n5. Can be used for future payments\n\n**Workflow:**\n- Step 1: Create Setup Intent (this endpoint) → Get clientSecret\n- Step 2: Frontend uses clientSecret with Stripe.js\n- Step 3: Customer enters card details\n- Step 4: Payment method saved to customer\n- Step 5: Use saved payment method in future payments\n\n**Benefits:**\n- Secure payment method storage\n- PCI compliance handled by Stripe\n- Faster checkout for returning customers\n- Support for multiple payment methods\n\n**Next Steps:**\n- Use clientSecret with Stripe.js Elements\n- Payment method automatically saved to customer\n- Use in \"Create Payment Intent\" with customerId"
           },
           "response": []
         },
@@ -964,7 +1016,9 @@
                   "    }",
                   "}"
                 ],
-                "type": "text/javascript"
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
               }
             }
           ],
@@ -982,7 +1036,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"country\": \"US\",\n    \"email\": \"merchant@example.com\",\n    \"businessName\": \"My Business\"\n}"
+              "raw": "{\n    \"country\": \"US\",\n    \"email\": \"merchant@example.com\",\n    \"businessName\": \"tarikul's store\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/{{apiVersion}}/stripe/connect/account",
@@ -996,7 +1050,49 @@
                 "account"
               ]
             },
-            "description": "**Purpose:** Create a Stripe Connect account for marketplace sellers or platform users.\n\n**Why Use This API:**\n- Enable marketplace payments (platform takes fee, seller gets paid)\n- Onboard sellers/merchants to your platform\n- Support multi-party transactions\n- Handle payouts to connected accounts\n\n**Real-Life Scenarios:**\n1. **Marketplace:** Seller registers to sell products, Connect account created\n2. **Platform:** Service provider joins platform, account created for payouts\n3. **Gig Economy:** Freelancer signs up, account created to receive payments\n4. **Event Platform:** Organizer creates account to receive ticket sales\n\n**How Stripe Connect Works:**\n- Platform (you) creates Connect account for seller\n- Customer pays platform\n- Platform takes application fee\n- Remaining amount transferred to seller's Connect account\n- Seller receives payout to their bank account\n\n**Account Types:**\n- Express: Quick onboarding, Stripe handles KYC\n- Standard: Full control, you handle KYC\n- Custom: Maximum control, requires additional setup\n\n**Workflow:**\n1. Create Connect Account (this endpoint) \u2192 Get accountId\n2. Create Account Link \u2192 Onboard seller (KYC, bank details)\n3. Seller completes onboarding\n4. Account ready to receive payments\n5. Create payouts to seller's bank account\n\n**Response:**\n- accountId: Stripe Connect account ID (starts with 'acct_')\n- Saved to {{connectAccountId}} variable\n- Account in 'pending' status until onboarding complete\n\n**Next Steps:**\n- Create account link for onboarding\n- Seller completes KYC and adds bank account\n- Account ready for payouts"
+            "description": "**Purpose:** Create a Stripe Connect account for marketplace sellers or platform users.\n\n**Why Use This API:**\n- Enable marketplace payments (platform takes fee, seller gets paid)\n- Onboard sellers/merchants to your platform\n- Support multi-party transactions\n- Handle payouts to connected accounts\n\n**Real-Life Scenarios:**\n1. **Marketplace:** Seller registers to sell products, Connect account created\n2. **Platform:** Service provider joins platform, account created for payouts\n3. **Gig Economy:** Freelancer signs up, account created to receive payments\n4. **Event Platform:** Organizer creates account to receive ticket sales\n\n**How Stripe Connect Works:**\n- Platform (you) creates Connect account for seller\n- Customer pays platform\n- Platform takes application fee\n- Remaining amount transferred to seller's Connect account\n- Seller receives payout to their bank account\n\n**Account Types:**\n- Express: Quick onboarding, Stripe handles KYC\n- Standard: Full control, you handle KYC\n- Custom: Maximum control, requires additional setup\n\n**Workflow:**\n1. Create Connect Account (this endpoint) → Get accountId\n2. Create Account Link → Onboard seller (KYC, bank details)\n3. Seller completes onboarding\n4. Account ready to receive payments\n5. Create payouts to seller's bank account\n\n**Response:**\n- accountId: Stripe Connect account ID (starts with 'acct_')\n- Saved to {{connectAccountId}} variable\n- Account in 'pending' status until onboarding complete\n\n**Next Steps:**\n- Create account link for onboarding\n- Seller completes KYC and adds bank account\n- Account ready for payouts"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Account Link",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "// {\n//     \"refreshUrl\": \"https://example.com/refresh\",\n//     \"returnUrl\": \"https://example.com/return\"\n// }"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/stripe/connect/account/:id/link",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "stripe",
+                "connect",
+                "account",
+                ":id",
+                "link"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{connectAccountId}}"
+                }
+              ]
+            },
+            "description": "**Purpose:** Gate onboarding link for Stripe Connect account (KYC, bank details).\n\n**Why Use This API:**\n- Required for seller to complete account setup\n- Handles KYC (Know Your Customer) verification\n- Seller adds bank account for payouts\n- Completes Connect account activation\n\n**Real-Life Scenarios:**\n1. **Seller Onboarding:** New seller needs to complete account setup\n2. **KYC Verification:** Seller must verify identity and business\n3. **Bank Account:** Seller adds bank account to receive payouts\n4. **Account Update:** Seller needs to update account information\n\n**How It Works:**\n- Creates secure onboarding link\n- Seller redirected to Stripe-hosted page\n- Completes identity verification\n- Adds bank account details\n- Returns to your platform via returnUrl\n\n**Request Parameters:**\n- refreshUrl: Where to redirect if link expires\n- returnUrl: Where to redirect after onboarding complete\n\n**Onboarding Process:**\n1. Seller clicks account link\n2. Completes identity verification (KYC)\n3. Adds business information\n4. Adds bank account for payouts\n5. Returns to your platform\n\n**Response:**\n- url: Onboarding link for seller\n- expires_at: Link expiration time\n\n**Use Cases:**\n- New seller onboarding\n- Account information updates\n- Re-verification required\n- Bank account changes"
           },
           "response": []
         },
@@ -1030,48 +1126,6 @@
               ]
             },
             "description": "Get Connect account details"
-          },
-          "response": []
-        },
-        {
-          "name": "Create Account Link",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"refreshUrl\": \"https://example.com/refresh\",\n    \"returnUrl\": \"https://example.com/return\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/{{apiVersion}}/stripe/connect/account/:id/link",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "{{apiVersion}}",
-                "stripe",
-                "connect",
-                "account",
-                ":id",
-                "link"
-              ],
-              "variable": [
-                {
-                  "key": "id",
-                  "value": "{{connectAccountId}}"
-                }
-              ]
-            },
-            "description": "**Purpose:** Gate onboarding link for Stripe Connect account (KYC, bank details).\n\n**Why Use This API:**\n- Required for seller to complete account setup\n- Handles KYC (Know Your Customer) verification\n- Seller adds bank account for payouts\n- Completes Connect account activation\n\n**Real-Life Scenarios:**\n1. **Seller Onboarding:** New seller needs to complete account setup\n2. **KYC Verification:** Seller must verify identity and business\n3. **Bank Account:** Seller adds bank account to receive payouts\n4. **Account Update:** Seller needs to update account information\n\n**How It Works:**\n- Creates secure onboarding link\n- Seller redirected to Stripe-hosted page\n- Completes identity verification\n- Adds bank account details\n- Returns to your platform via returnUrl\n\n**Request Parameters:**\n- refreshUrl: Where to redirect if link expires\n- returnUrl: Where to redirect after onboarding complete\n\n**Onboarding Process:**\n1. Seller clicks account link\n2. Completes identity verification (KYC)\n3. Adds business information\n4. Adds bank account for payouts\n5. Returns to your platform\n\n**Response:**\n- url: Onboarding link for seller\n- expires_at: Link expiration time\n\n**Use Cases:**\n- New seller onboarding\n- Account information updates\n- Re-verification required\n- Bank account changes"
           },
           "response": []
         },
@@ -1303,7 +1357,57 @@
                 "payout"
               ]
             },
-            "description": "**Purpose:** Transfer funds from Connect account to seller's bank account.\n\n**Why Use This API:**\n- Pay sellers their earnings\n- Transfer marketplace revenue to sellers\n- Process seller payouts\n- Complete the payment flow\n\n**Real-Life Scenarios:**\n1. **Marketplace Payout:** Seller's earnings transferred to bank account\n2. **Weekly Payout:** Scheduled payout of accumulated revenue\n3. **Manual Payout:** Admin-initiated payout to seller\n4. **Revenue Distribution:** Platform distributes funds to sellers\n\n**How It Works:**\n- Transfers funds from Connect account balance\n- Sends to seller's external bank account\n- Takes 2-7 business days to arrive\n- Can be instant in some regions (Stripe Instant Payouts)\n\n**Request Parameters:**\n- connectAccountId: Seller's Connect account ID\n- amount: Payout amount in dollars\n- currency: Currency code (usd, eur, etc.)\n- externalAccountId: Bank account ID to receive payout\n- description: Optional payout description\n\n**Payout Flow:**\n1. Customer pays platform\n2. Platform takes application fee\n3. Remaining amount in Connect account balance\n4. Create Payout (this endpoint) \u2192 Transfer to seller's bank\n5. Seller receives funds in 2-7 business days\n\n**Response:**\n- payoutId: Stripe payout ID\n- status: pending, in_transit, paid, failed\n- amount: Payout amount\n- arrival_date: When funds will arrive\n\n**Use Cases:**\n- Weekly/monthly seller payouts\n- On-demand payouts\n- Revenue distribution\n- Seller earnings withdrawal"
+            "description": "**Purpose:** Transfer funds from Connect account to seller's bank account.\n\n**Why Use This API:**\n- Pay sellers their earnings\n- Transfer marketplace revenue to sellers\n- Process seller payouts\n- Complete the payment flow\n\n**Real-Life Scenarios:**\n1. **Marketplace Payout:** Seller's earnings transferred to bank account\n2. **Weekly Payout:** Scheduled payout of accumulated revenue\n3. **Manual Payout:** Admin-initiated payout to seller\n4. **Revenue Distribution:** Platform distributes funds to sellers\n\n**How It Works:**\n- Transfers funds from Connect account balance\n- Sends to seller's external bank account\n- Takes 2-7 business days to arrive\n- Can be instant in some regions (Stripe Instant Payouts)\n\n**Request Parameters:**\n- connectAccountId: Seller's Connect account ID\n- amount: Payout amount in dollars\n- currency: Currency code (usd, eur, etc.)\n- externalAccountId: Bank account ID to receive payout\n- description: Optional payout description\n\n**Payout Flow:**\n1. Customer pays platform\n2. Platform takes application fee\n3. Remaining amount in Connect account balance\n4. Create Payout (this endpoint) → Transfer to seller's bank\n5. Seller receives funds in 2-7 business days\n\n**Response:**\n- payoutId: Stripe payout ID\n- status: pending, in_transit, paid, failed\n- amount: Payout amount\n- arrival_date: When funds will arrive\n\n**Use Cases:**\n- Weekly/monthly seller payouts\n- On-demand payouts\n- Revenue distribution\n- Seller earnings withdrawal"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Transfer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const jsonData = pm.response.json();",
+                  "    if (jsonData.id) {",
+                  "        pm.collectionVariables.set('transferId', jsonData.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"connectAccountId\": \"{{connectAccountId}}\",\n    \"amount\": 25.5,\n    \"currency\": \"usd\",\n    \"description\": \"Seller earnings for order #123\",\n    \"metadata\": {\n        \"orderId\": \"123\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/{{apiVersion}}/stripe/connect/transfer",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiVersion}}",
+                "stripe",
+                "connect",
+                "transfer"
+              ]
+            },
+            "description": "**Purpose:** Move funds from your **platform Stripe balance** to a **connected account**.\n\n**This is NOT a payout:**\n- **Transfer** = platform → connected account (Stripe balance movement)\n- **Payout** = connected account → bank account\n\n**Common Flow (marketplace):**\n1. Customer pays platform\n2. Platform keeps application fee\n3. Platform transfers seller amount to connected account (this endpoint)\n4. (Optional) Connected account later creates payout to bank\n\n**Real-Life Scenarios:**\n1. **Marketplace Revenue:** Transfer seller's share after platform fee\n2. **Split Payment:** Distribute funds to multiple sellers\n3. **Escrow Release:** Release held funds to seller\n4. **Commission Payment:** Pay affiliate/seller commission\n\n**How It Works:**\n- Moves funds from platform Stripe balance\n- Transfers to connected account balance\n- Funds available immediately in connected account\n- Connected account can then create payout to bank\n\n**Request Parameters:**\n- connectAccountId: Destination Connect account ID (starts with acct_)\n- amount: Transfer amount in dollars (e.g., 25.5)\n- currency: Currency code (usd, eur, etc.)\n- description: Optional description for tracking\n- metadata: Optional custom data (orderId, etc.)\n\n**Transfer vs Payout:**\n- **Transfer (this endpoint):** Platform balance → Connected account balance\n- **Payout:** Connected account balance → Seller's bank account\n\n**Response:**\n- id: Transfer ID (starts with tr_)\n- amount: Amount in cents\n- currency: Currency code\n- destination: Connected account ID\n\n**Use Cases:**\n- Marketplace revenue distribution\n- Split payments\n- Escrow fund release\n- Commission payments\n- Seller earnings transfer"
           },
           "response": []
         },
@@ -1318,7 +1422,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/{{apiVersion}}/stripe/connect/payout/:id",
+              "raw": "{{baseUrl}}/{{apiVersion}}/stripe/connect/payout/:id?connectAccountId={{connectAccountId}}",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -1329,6 +1433,13 @@
                 "payout",
                 ":id"
               ],
+              "query": [
+                {
+                  "key": "connectAccountId",
+                  "value": "{{connectAccountId}}",
+                  "description": "Connect account ID that owns this payout"
+                }
+              ],
               "variable": [
                 {
                   "key": "id",
@@ -1336,7 +1447,7 @@
                 }
               ]
             },
-            "description": "Get payout status"
+            "description": "**Purpose:** Retrieve the status and details of a payout for a connected account.\n\n**Why Use This API:**\n- Check payout status (pending, in_transit, paid, failed)\n- Get payout details (amount, arrival date, description)\n- Monitor payout progress\n- Track payout history\n\n**Real-Life Scenarios:**\n1. **Status Check:** Check if payout has been processed\n2. **Customer Support:** Verify payout status for customer inquiry\n3. **Reconciliation:** Match payouts with accounting records\n4. **Monitoring:** Track payout success/failure rates\n\n**How It Works:**\n- Retrieves payout from the specified connected account\n- Returns current status and all payout details\n- Requires connectAccountId because payouts belong to connected accounts\n\n**Request Parameters:**\n- id: Payout ID (starts with po_)\n- connectAccountId: (Query param) Connect account ID that owns this payout\n\n**Response:**\n- id: Payout ID\n- amount: Payout amount in cents\n- currency: Currency code\n- status: pending, in_transit, paid, failed, canceled\n- arrivalDate: Timestamp when funds will arrive\n- description: Optional payout description\n- metadata: Custom tracking data\n\n**Important:**\n- connectAccountId is required because payouts belong to connected accounts\n- Payout must exist in the specified connected account\n- Use the same connectAccountId that was used when creating the payout"
           },
           "response": []
         },
